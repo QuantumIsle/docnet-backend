@@ -32,12 +32,7 @@ const UpcomingAppointmentSchema = new Schema(
     notes: {
       type: String,
       required: false,
-    },
-    prescription: [
-      {
-        type: String,
-      },
-    ],
+    }
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt timestamps

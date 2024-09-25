@@ -8,6 +8,8 @@ router.post("/register", patientController.register);
 // Login route
 router.post("/login", patientController.login);
 
+router.get("/auth-check", patientController.checkAuth);
+
 router.post("/refresh-access-token", patientController.refreshToken);
 
 //patient booking routes

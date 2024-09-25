@@ -16,6 +16,10 @@ const PatientSchema = new Schema(
       type: String,
       required: true,
     },
+    imgUrl: {
+      type: String,
+      required: false,
+    },
     dateOfBirth: {
       type: Date,
       required: false,
@@ -25,10 +29,12 @@ const PatientSchema = new Schema(
       enum: ["male", "female"],
       required: false,
     },
-    languagesSpoken: {
-      type: String,
-      required: false,
-    },
+    languagesSpoken: [
+      {
+        type: String,
+        required: false,
+      },
+    ],
     email: {
       type: String,
       required: true,
@@ -38,6 +44,7 @@ const PatientSchema = new Schema(
       type: String,
       required: false,
       unique: true,
+      sparse: true,
     },
     password: {
       type: String,
@@ -48,7 +55,7 @@ const PatientSchema = new Schema(
       required: false,
     },
     ethnicity: { type: String, required: false },
-    
+
     existingConditions: {
       type: String,
       required: false,
@@ -118,6 +125,8 @@ PatientSchema.statics.addPatient = async function (patientData) {
 
     return newPatient;
   } catch (error) {
+    console.log(error);
+
     throw new Error(error.message);
   }
 };

@@ -1,11 +1,15 @@
 const { ApolloServer } = require("apollo-server-express");
 const mongoose = require("mongoose");
 const express = require("express");
-const jwt = require("jsonwebtoken");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-require("./config/passportSetup");
+const passport = require("passport");
+const session = require("express-session");
+const authRoutes = require("./routes/authRoutes");
+require("./config/passportSetup"); // Import Passport configuration
+
 require("dotenv").config();
+
 
 const cookieParser = require("cookie-parser");
 
@@ -42,6 +46,22 @@ app.use(cookieParser());
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Session configuration
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+// Initialize passport
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Routes
+app.use("/", authRoutes);
+
 // Routes
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
@@ -68,21 +88,8 @@ app.use("/doctors", require("./routes/doctorRoutes"));
 //   res.send(sdkJWT);
 // });
 
-const passport = require("passport");
+
 const authRoute = require("./routes/authRoutes");
-const cookieSession = require("cookie-session");
-require("./config/passportSetup");
-
-app.use(
-  cookieSession({
-    name: "session",
-    keys: ["cyberwolve"],
-    maxAge: 24 * 60 * 60 * 100,
-  })
-);
-
-app.use(passport.initialize());
-app.use(passport.session());
 
 app.use("/auth", authRoute);
 
@@ -90,8 +97,8 @@ app.use(auth);
 
 // Apollo Server setup
 const server = new ApolloServer({
-  typeDefs: [patientTypeDefs, DoctorTypeDefs,AppointmentTypeDefs],
-  resolvers: [patientResolvers, DoctorResolvers,AppointmentResolvers],
+  typeDefs: [patientTypeDefs, DoctorTypeDefs, AppointmentTypeDefs],
+  resolvers: [patientResolvers, DoctorResolvers, AppointmentResolvers],
   context: ({ req }) => {
     return { user: req.user }; // This will be available to resolvers
   },

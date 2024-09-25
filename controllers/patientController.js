@@ -50,13 +50,14 @@ exports.register = async (req, res) => {
       message: "Login successful",
     });
   } catch (error) {
-    res.status(500).json({ message: "Server error", error });
+    res.status(500).json({ message: error });
   }
 };
 
 // Logs in a patient and returns access and refresh tokens
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
 
   try {
     // Find the patient by email
@@ -94,11 +95,20 @@ exports.login = async (req, res) => {
     await patient.save();
 
     // Return the tokens and a success message
-    res.status(200).json({
-      accessToken,
-      refreshToken,
-      message: "Login successful",
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "None",
+      maxAge: 2 * 60 * 60 * 1000, // 2 hours
     });
+
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "None",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+    res.status(200).json({ message: "Logged in" });
   } catch (error) {
     res.status(500).json({ message: "Server error", error });
   }
@@ -106,7 +116,7 @@ exports.login = async (req, res) => {
 
 // Refreshes the access token using the refresh token
 exports.refreshToken = async (req, res) => {
-  const { refreshToken } = req.body;
+  const { refreshToken } = req.cookies.refresh_token;
 
   // Check if a refresh token is provided
   if (!refreshToken) {
@@ -144,10 +154,18 @@ exports.refreshToken = async (req, res) => {
     await patient.save();
 
     // Return the new tokens
-    res.status(200).json({
-      accessToken: newAccessToken,
-      refreshToken: newRefreshToken,
-      message: "Tokens refreshed successfully",
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "Strict",
+      maxAge: 2 * 60 * 60 * 1000, // 2 hours
+    });
+
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
   } catch (error) {
     return res
@@ -155,7 +173,27 @@ exports.refreshToken = async (req, res) => {
       .json({ message: "Invalid or expired refresh token", error });
   }
 };
+exports.checkAuth = (req, res) => {
+  // Check if the user is authenticated based on the JWT in the cookies
+  const accessToken = req.cookies.access_token;
 
+  if (!accessToken) {
+    return res.status(401).json({ message: "Not authenticated" });
+  }
+
+  try {
+    // Verify the access token
+    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+
+    if (decoded) {
+      return res.status(200).json({ message: "Authenticated" });
+    } else {
+      return res.status(401).json({ message: "Invalid token" });
+    }
+  } catch (error) {
+    return res.status(401).json({ message: "Invalid token" });
+  }
+};
 // Authenticates a patient for booking purposes
 
 dayjs.extend(utc);

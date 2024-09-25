@@ -28,10 +28,6 @@ const CompletedAppointmentSchema = new Schema(
       type: Date,
       required: false,
     },
-    reason: {
-      type: String,
-      required: false,
-    },
     notes: {
       type: String,
       required: false,
