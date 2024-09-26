@@ -65,6 +65,7 @@ app.use("/", authRoutes);
 // Routes
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
+
 // Signature route
 // app.get("/signature", (req, res) => {
 //   const iat = Math.round(new Date().getTime() / 1000) - 30;
@@ -100,7 +101,7 @@ const server = new ApolloServer({
   typeDefs: [patientTypeDefs, DoctorTypeDefs, AppointmentTypeDefs],
   resolvers: [patientResolvers, DoctorResolvers, AppointmentResolvers],
   context: ({ req }) => {
-    return { user: req.user }; // This will be available to resolvers
+    return { user: req.user }; 
   },
 });
 

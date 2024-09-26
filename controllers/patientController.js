@@ -154,7 +154,7 @@ exports.refreshToken = async (req, res) => {
     await patient.save();
 
     // Return the new tokens
-    res.cookie("access_token", accessToken, {
+    res.cookie("access_token", newAccessToken, {
       httpOnly: true,
       secure: true, // Use secure cookies in production
       sameSite: "Strict",

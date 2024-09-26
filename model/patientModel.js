@@ -69,7 +69,7 @@ const PatientSchema = new Schema(
       required: false,
     },
     bloodType: {
-      type: String, // Added blood type field
+      type: String, 
       enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       required: false,
     },

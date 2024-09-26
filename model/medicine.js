@@ -32,7 +32,7 @@ const MedicineSchema = new Schema(
   },
   {
     discriminatorKey: "status",
-    timestamps: true, // Automatically add createdAt and updatedAt timestamps
+    timestamps: true, 
   }
 );
 
