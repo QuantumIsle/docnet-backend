@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
-const db = mongoose.connection.useDb("mydatabase");
+
 // Base Appointment Schema
 const MedicineSchema = new Schema(
   {

@@ -2,9 +2,12 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
-const db = mongoose.connection.useDb("mydatabase");
+
+const moment = require("moment-timezone");
 
 const UpcomingAppointment = require("./appointments/UpcomingAppointmentModel");
+
+const validTimeZones = moment.tz.names();
 
 const PatientSchema = new Schema(
   {
@@ -69,9 +72,14 @@ const PatientSchema = new Schema(
       required: false,
     },
     bloodType: {
-      type: String, 
+      type: String,
       enum: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
       required: false,
+    },
+    timeZone: {
+      type: String,
+      required: false,
+      enum: validTimeZones, 
     },
     completedAppointments: [
       {

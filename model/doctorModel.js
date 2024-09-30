@@ -1,11 +1,11 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
-
-
+const moment = require("moment-timezone");
 
 const Review = require("./review/review"); // Import the Review model
 
+const validTimeZones = moment.tz.names();
 // Define the schema for doctor accounts
 const DoctorSchema = new Schema(
   {
@@ -69,6 +69,11 @@ const DoctorSchema = new Schema(
       min: 0,
       max: 5,
       default: 0, // Aggregate rating based on reviews
+    },
+    timeZone: {
+      type: String,
+      required: false,
+      enum: validTimeZones, // Automatically populate time zones using moment-timezone
     },
     professionStartedYear: {
       type: Number,
