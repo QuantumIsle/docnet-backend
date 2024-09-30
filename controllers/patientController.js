@@ -12,7 +12,7 @@ exports.register = async (req, res) => {
   const { firstName, lastName, dateOfBirth, gender, email, password } =
     req.body;
 
-  console.log(req.body);
+  
 
   try {
     // Create a new patient using the Patient model
@@ -57,8 +57,7 @@ exports.register = async (req, res) => {
 // Logs in a patient and returns access and refresh tokens
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
-
+  
   try {
     // Find the patient by email
     const patient = await Patient.findOne({ email });
@@ -115,10 +114,31 @@ exports.login = async (req, res) => {
 };
 
 // Refreshes the access token using the refresh token
-exports.refreshToken = async (req, res) => {
-  const { refreshToken } = req.cookies.refresh_token;
 
-  // Check if a refresh token is provided
+exports.authMiddleware = async (req, res) => {
+  const accessToken = req.cookies.access_token;
+  const refreshToken = req.cookies.refresh_token;
+  console.log(accessToken);
+  console.log(refreshToken);
+
+  // Check if access token exists and is valid
+  if (accessToken) {
+    try {
+      // Verify the access token
+      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+
+      if (decoded) {
+        return res.status(200).json({ message: "Authenticated" });
+      } else {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+    } catch (error) {
+      // Access token is invalid or expired, try refreshing the token
+      console.log("Access token expired or invalid");
+    }
+  }
+
+  // No access token or invalid access token, attempt to refresh the token
   if (!refreshToken) {
     return res.status(400).json({ message: "Refresh token is required" });
   }
@@ -135,7 +155,7 @@ exports.refreshToken = async (req, res) => {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
 
-    // Generate a new access token (valid for 1 hour)
+    // Generate a new access token (valid for 2 hours)
     const newAccessToken = jwt.sign(
       { id: patient._id, email: patient.email },
       process.env.ACCESS_TOKEN,
@@ -153,7 +173,7 @@ exports.refreshToken = async (req, res) => {
     patient.refreshToken = newRefreshToken;
     await patient.save();
 
-    // Return the new tokens
+    // Set new access and refresh tokens in cookies
     res.cookie("access_token", newAccessToken, {
       httpOnly: true,
       secure: true, // Use secure cookies in production
@@ -161,39 +181,21 @@ exports.refreshToken = async (req, res) => {
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
     });
 
-    res.cookie("refresh_token", refreshToken, {
+    res.cookie("refresh_token", newRefreshToken, {
       httpOnly: true,
       secure: true, // Use secure cookies in production
       sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
+
+    return res.status(200).json({ message: "Token refreshed successfully" });
   } catch (error) {
     return res
       .status(403)
       .json({ message: "Invalid or expired refresh token", error });
   }
 };
-exports.checkAuth = (req, res) => {
-  // Check if the user is authenticated based on the JWT in the cookies
-  const accessToken = req.cookies.access_token;
 
-  if (!accessToken) {
-    return res.status(401).json({ message: "Not authenticated" });
-  }
-
-  try {
-    // Verify the access token
-    const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
-
-    if (decoded) {
-      return res.status(200).json({ message: "Authenticated" });
-    } else {
-      return res.status(401).json({ message: "Invalid token" });
-    }
-  } catch (error) {
-    return res.status(401).json({ message: "Invalid token" });
-  }
-};
 // Authenticates a patient for booking purposes
 
 dayjs.extend(utc);

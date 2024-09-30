@@ -5,11 +5,10 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const session = require("express-session");
-const authRoutes = require("./routes/authRoutes");
+
 require("./config/passportSetup"); // Import Passport configuration
 
 require("dotenv").config();
-
 
 const cookieParser = require("cookie-parser");
 
@@ -60,7 +59,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 // Routes
-app.use("/", authRoutes);
+app.use("/auth", require("./routes/authRoutes"));
 
 // Routes
 app.use("/patients", require("./routes/patientRoutes"));
@@ -89,11 +88,6 @@ app.use("/doctors", require("./routes/doctorRoutes"));
 //   res.send(sdkJWT);
 // });
 
-
-const authRoute = require("./routes/authRoutes");
-
-app.use("/auth", authRoute);
-
 app.use(auth);
 
 // Apollo Server setup
@@ -101,7 +95,7 @@ const server = new ApolloServer({
   typeDefs: [patientTypeDefs, DoctorTypeDefs, AppointmentTypeDefs],
   resolvers: [patientResolvers, DoctorResolvers, AppointmentResolvers],
   context: ({ req }) => {
-    return { user: req.user }; 
+    return { user: req.user };
   },
 });
 
