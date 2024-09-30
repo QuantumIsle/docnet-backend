@@ -20,15 +20,7 @@ const CompletedAppointmentSchema = new Schema(
       type: Date,
       required: true,
     },
-    outcome: {
-      type: String,
-      required: false,
-    },
-    followUpDate: {
-      type: Date,
-      required: false,
-    },
-    notes: {
+    diagnosis: {
       type: String,
       required: false,
     },

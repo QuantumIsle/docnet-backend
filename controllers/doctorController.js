@@ -22,14 +22,13 @@ exports.login = async (req, res) => {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    // Generate an access token (valid for 1 hour)
+    // Generate access and refresh tokens
     const accessToken = jwt.sign(
       { id: doctor._id, email: doctor.email },
       process.env.ACCESS_TOKEN,
       { expiresIn: "2h" }
     );
 
-    // Generate a refresh token (valid for 7 days)
     const refreshToken = jwt.sign(
       { id: doctor._id, email: doctor.email },
       process.env.REFRESH_TOKEN,
@@ -40,11 +39,26 @@ exports.login = async (req, res) => {
     doctor.refreshToken = refreshToken;
     await doctor.save();
 
-    // Return the tokens and a success message
+    // Set cookies for accessToken and refreshToken
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,   // Secure flag should be added for production
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 2 * 60 * 60 * 1000, // 2 hours
+      sameSite: 'Strict',
+    });
+
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      sameSite: 'Strict',
+    });
+
+    // Return the tokens in response as well, if you want to access them in the frontend
     res.status(200).json({
+      message: "Login successful",
       accessToken,
       refreshToken,
-      message: "Login successful",
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -63,7 +77,7 @@ exports.register = async (req, res) => {
     contactNumber,
     education,
     languagesSpoken,
-    about, // New fields
+    about,
     qualifications,
     professionalBackground,
     professionStartedYear,
@@ -71,7 +85,7 @@ exports.register = async (req, res) => {
   } = req.body;
 
   try {
-    // Create a new doctor using the Doctor model
+    // Create a new doctor
     const newDoctor = await Doctor.addDoctor({
       firstName,
       lastName,
@@ -83,15 +97,43 @@ exports.register = async (req, res) => {
       contactNumber,
       education,
       languagesSpoken,
-      about, // New fields
+      about,
       qualifications,
       professionalBackground,
       professionStartedYear,
-      imageUrl, // Optional
+      imageUrl,
     });
 
-    // If doctor is created successfully, send a response
     if (newDoctor) {
+      // Generate access and refresh tokens
+      const accessToken = jwt.sign(
+        { id: newDoctor._id, email: newDoctor.email },
+        process.env.ACCESS_TOKEN,
+        { expiresIn: "2h" }
+      );
+
+      const refreshToken = jwt.sign(
+        { id: newDoctor._id, email: newDoctor.email },
+        process.env.REFRESH_TOKEN,
+        { expiresIn: "7d" }
+      );
+
+      // Set cookies for accessToken and refreshToken
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 2 * 60 * 60 * 1000, // 2 hours
+        sameSite: 'Strict',
+      });
+
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        sameSite: 'Strict',
+      });
+
+      // Respond with a success message
       res.status(201).json({
         message: "Doctor registered successfully",
         doctor: {
@@ -112,15 +154,11 @@ exports.register = async (req, res) => {
       });
     }
   } catch (error) {
-    // Handling different error types more gracefully
-    if (error.message === "Doctor with this email already exists.") {
-      return res.status(400).json({ message: error.message });
-    }
-
     res.status(500).json({
       message: "Server error, unable to register doctor",
       error: error.message,
     });
   }
 };
+
 
