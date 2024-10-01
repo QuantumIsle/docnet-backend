@@ -162,3 +162,83 @@ exports.register = async (req, res) => {
 };
 
 
+exports.authMiddleware = async (req, res) => {
+  const accessToken = req.cookies.access_token;
+  const refreshToken = req.cookies.refresh_token;
+
+  // Check if access token exists and is valid
+  if (accessToken) {
+    try {
+      // Verify the access token
+      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+
+      if (decoded) {
+        return res.status(200).json({ message: "Authenticated" });
+      } else {
+        return res.status(401).json({ message: "Invalid token" });
+      }
+    } catch (error) {
+      // Access token is invalid or expired, try refreshing the token
+      console.log("Access token expired or invalid");
+    }
+  }
+
+  // No access token or invalid access token, attempt to refresh the token
+  if (!refreshToken) {
+    return res.status(400).json({ message: "Refresh token is required" });
+  }
+
+  try {
+    // Verify the provided refresh token
+    const decoded = jwt.verify(refreshToken, process.env.REFRESH_TOKEN);
+
+    // Find the patient by decoded ID
+    const doctor = await Doctor.findById(decoded.id);
+
+    // Check if the patient exists and if the refresh token matches
+    if (!patient || patient.refreshToken !== refreshToken) {
+      return res.status(403).json({ message: "Invalid refresh token" });
+    }
+
+    // Generate a new access token (valid for 2 hours)
+    const newAccessToken = jwt.sign(
+      { id: patient._id, email: patient.email },
+      process.env.ACCESS_TOKEN,
+      { expiresIn: "2h" }
+    );
+
+    // Optionally generate a new refresh token (valid for 7 days)
+    const newRefreshToken = jwt.sign(
+      { id: patient._id, email: patient.email },
+      process.env.REFRESH_TOKEN,
+      { expiresIn: "7d" }
+    );
+
+    // Update the patient's refresh token in the database
+    patient.refreshToken = newRefreshToken;
+    await patient.save();
+
+    // Set new access and refresh tokens in cookies
+    res.cookie("access_token", newAccessToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "Strict",
+      maxAge: 2 * 60 * 60 * 1000, // 2 hours
+    });
+
+    res.cookie("refresh_token", newRefreshToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "Strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
+
+    return res.status(200).json({ message: "Token refreshed successfully" });
+  } catch (error) {
+    return res
+      .status(403)
+      .json({ message: "Invalid or expired refresh token", error });
+  }
+};
+
+

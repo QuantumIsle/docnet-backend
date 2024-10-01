@@ -81,6 +81,10 @@ const PatientSchema = new Schema(
       required: false,
       enum: validTimeZones, 
     },
+    imgUrl:{
+      type: String,
+      required: false,
+    },
     completedAppointments: [
       {
         type: Schema.Types.ObjectId,

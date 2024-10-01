@@ -83,6 +83,16 @@ const DoctorSchema = new Schema(
     languagesSpoken: {
       type: String,
     },
+    workingHours: {
+      startTime: {
+        type: String, // Use String to allow flexible time format (e.g., "09:00 AM")
+        required: true,
+      },
+      endTime: {
+        type: String, // Use String to allow flexible time format (e.g., "05:00 PM")
+        required: true,
+      },
+    },
     reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }], // Reference to Review model
   },
   {
@@ -141,7 +151,7 @@ DoctorSchema.statics.getDoctorByID = async function (id) {
       path: "reviews",
       populate: {
         path: "user",
-        select: "firstName lastName userImageUrl", // Populate user details in reviews
+        select: "firstName lastName imgUrl", // Populate user details in reviews
       },
     });
     if (!doctor) {

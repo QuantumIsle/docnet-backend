@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-const db = mongoose.connection.useDb("mydatabase");
-
 // Define the schema for completed appointments
 const CompletedAppointmentSchema = new Schema(
   {
@@ -16,22 +14,29 @@ const CompletedAppointmentSchema = new Schema(
       ref: "Patient",
       required: true,
     },
-    date: {
-      type: Date,
-      required: true,
-    },
-    diagnosis: {
-      type: String,
-      required: false,
-    },
-    prescription: [
-      {
+    outcome: {
+      diagnosis: {
         type: String,
+        required: true, 
       },
-    ],
+      prescription: [
+        {
+          medicine: { type: String, required: true },
+          howToUse: { type: String, required: true },
+        },
+      ],
+      reportRequest: [{
+        type: String, 
+        required: false,
+      }],
+      notes: {
+        type: String,
+        required: false, 
+      },
+    },
   },
   {
-    timestamps: true, // Automatically add createdAt and updatedAt timestamps
+    timestamps: true, 
   }
 );
 

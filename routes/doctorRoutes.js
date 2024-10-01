@@ -8,5 +8,6 @@ router.post("/register", doctorController.register);
 // Login route
 router.post("/login", doctorController.login);
 
+router.post("/auth-check", doctorController.authMiddleware);
 
 module.exports = router;

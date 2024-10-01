@@ -15,9 +15,11 @@ const typeDefs = gql`
     googleId: String
     ethnicity: String
     existingConditions: String
-    weight: Float 
-    height: Float 
-    bloodType: String 
+    weight: Float
+    height: Float
+    bloodType: String
+    imgUrl: String
+    timeZone:String
     completedAppointments: [CompletedAppointment]
     upcomingAppointments: [UpcomingAppointment]
     createdAt: String!
