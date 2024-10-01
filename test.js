@@ -1,107 +1,136 @@
-
-// const express = require("express");
-// const passport = require("passport");
-// const session = require("express-session");
-// const GoogleStrategy = require("passport-google-oauth20").Strategy;
+// const mongoose = require("mongoose");
+// const Patient = require("./model/patientModel");
 // require("dotenv").config();
-// const app = express();
 
-// // Initialize session
-// app.use(
-//   session({
-//     secret: "your_secret_key",
-//     resave: false,
-//     saveUninitialized: true,
-//   })
-// );
+// const MDB = process.env.MONGO_URI;
 
-// // Initialize passport
-// app.use(passport.initialize());
-// app.use(passport.session());
+// // Dummy data for patients
+// const dummyPatients = [
+//   {
+//     firstName: "John",
+//     lastName: "Doe",
+//     email: "johndoe@example.com",
+//     password: "123", // Will be hashed by the middleware
+//     dateOfBirth: new Date("1990-05-12"),
+//     gender: "male",
+//     languagesSpoken: ["English", "Spanish"],
+//     ethnicity: "Caucasian",
+//     existingConditions: "Hypertension",
+//     weight: 75,
+//     height: 180,
+//     bloodType: "O+",
+//     timeZone: "America/New_York",
+//     imgUrl: "https://example.com/img/johndoe.jpg",
+//   },
+//   {
+//     firstName: "Jane",
+//     lastName: "Smith",
+//     email: "janesmith@example.com",
+//     password: "123", // Will be hashed by the middleware
+//     dateOfBirth: new Date("1985-08-23"),
+//     gender: "female",
+//     languagesSpoken: ["English", "French"],
+//     ethnicity: "African American",
+//     existingConditions: "Asthma",
+//     weight: 68,
+//     height: 170,
+//     bloodType: "A+",
+//     timeZone: "Europe/Paris",
+//     imgUrl: "https://example.com/img/janesmith.jpg",
+//   },
+//   {
+//     firstName: "Mike",
+//     lastName: "Johnson",
+//     email: "mikejohnson@example.com",
+//     password: "123", // Will be hashed by the middleware
+//     dateOfBirth: new Date("1975-11-04"),
+//     gender: "male",
+//     languagesSpoken: ["English"],
+//     ethnicity: "Asian",
+//     existingConditions: "Diabetes",
+//     weight: 85,
+//     height: 175,
+//     bloodType: "B+",
+//     timeZone: "Asia/Singapore",
+//     imgUrl: "https://example.com/img/mikejohnson.jpg",
+//   },
+//   {
+//     firstName: "Emily",
+//     lastName: "Davis",
+//     email: "emilydavis@example.com",
+//     password: "123", // Will be hashed by the middleware
+//     dateOfBirth: new Date("1992-01-16"),
+//     gender: "female",
+//     languagesSpoken: ["English", "German"],
+//     ethnicity: "Hispanic",
+//     existingConditions: "None",
+//     weight: 55,
+//     height: 160,
+//     bloodType: "AB-",
+//     timeZone: "Europe/Berlin",
+//     imgUrl: "https://example.com/img/emilydavis.jpg",
+//   },
+// ];
 
-// // Passport session setup (serialize/deserialize user)
-// passport.serializeUser((user, done) => {
-//   done(null, user);
-// });
+// // Function to add patients to the database
+// const addPatients = async () => {
+//   try {
+//     // Connect to MongoDB
+//     await mongoose.connect(MDB, {
+//       useNewUrlParser: true,
+//       useUnifiedTopology: true,
+//     });
+//     console.log("Connected to MongoDB");
 
-// passport.deserializeUser((user, done) => {
-//   done(null, user);
-// });
-
-// // Use Google Strategy
-// passport.use(
-//   new GoogleStrategy(
-//     {
-//       clientID: process.env.GOOGLE_CLIENT_ID,
-//       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-//       callbackURL: "http://localhost:4000/auth/callback",
-//     },
-//     (accessToken, refreshToken, profile, done) => {
-//       // Here, you would save the user profile in the database if necessary
-//       return done(null, profile);
+//     // Add each patient one by one
+//     for (const patientData of dummyPatients) {
+//       try {
+//         const newPatient = await Patient.addPatient(patientData);
+//         console.log(
+//           `New patient added: ${newPatient.firstName} ${newPatient.lastName}`
+//         );
+//       } catch (error) {
+//         console.error(
+//           `Error adding patient ${patientData.firstName} ${patientData.lastName}: ${error.message}`
+//         );
+//       }
 //     }
-//   )
-// );
 
-// // Routes
-// app.get("/", (req, res) => {
-//   res.send('<h1>Home</h1><a href="/auth/google">Authenticate with Google</a>');
-// });
-
-// // Redirect to Google for authentication
-// app.get(
-//   "/auth/google",
-//   passport.authenticate("google", {
-//     scope: ["profile", "email"],
-//   })
-// );
-
-// // Google callback after authentication
-// app.get(
-//   "/auth/callback",
-//   passport.authenticate("google", { failureRedirect: "/" }),
-//   (req, res) => {
-//     res.redirect("/profile");
+//     mongoose.connection.close(); // Close the MongoDB connection after adding all patients
+//     console.log("All patients processed.");
+//   } catch (error) {
+//     console.error("Error connecting to MongoDB:", error.message);
+//     mongoose.connection.close(); // Ensure the connection is closed in case of error
 //   }
-// );
+// };
 
-// // Profile page after successful authentication
-// app.get("/profile", (req, res) => {
-//   if (!req.isAuthenticated()) {
-//     return res.redirect("/");
-//   }
-//   console.log(req.user);
+// // Call the function to add the patients
+// addPatients();
 
-//   res.send(
-//     `<h1>Welcome ${req.user.displayName}</h1><a href="/logout">Logout</a>`
-//   );
-// });
+const moment = require("moment-timezone");
 
-// // Logout route
-// app.get("/logout", (req, res) => {
-//   req.logout((err) => {
-//     if (err) {
-//       return next(err);
-//     }
-//     res.redirect("/");
-//   });
-// });
+/**
+ * Converts a given time from UTC to a specific time zone.
+ *
+ * @param {string} utcTime - The time in UTC (format: HH:mm or any valid time format).
+ * @param {string} targetTimeZone - The target time zone (e.g., "America/New_York").
+ * @param {string} format - Optional. The desired output format (e.g., "hh:mm A" for 12-hour with AM/PM).
+ *                          Default is "hh:mm A".
+ * @returns {string} The converted time in the target time zone.
+ */
+const convertUtcToTimeZone = (utcTime, targetTimeZone, format = "hh:mm A") => {
+  // Ensure the time is treated as UTC and then convert to the target time zone
+  const convertedTime = moment.utc(utcTime, "HH:mm").tz(targetTimeZone);
 
-// const PORT = process.env.PORT || 4000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
-// testTimeZones.js
-const moment = require('moment-timezone');
+  // Return the time in the desired format
+  return convertedTime.format(format);
+};
 
-// Get all available time zones
-const timeZones = moment.tz.names();
 
-// Output the list of time zones
-console.log("Available Time Zones:");
-timeZones.forEach((tz, index) => {
-  console.log(`${index + 1}. ${tz}`);
-});
 
-// Optionally, you can display the count of time zones
-console.log(`\nTotal Time Zones: ${timeZones.length}`);
+const utcTime2 = "14:28"; // 9:30 AM UTC
+const targetTimeZone2 = "Asia/Tokyo";
+const formattedTime = convertUtcToTimeZone(utcTime2, targetTimeZone2);
+
+console.log(`The time in ${targetTimeZone2} is: ${formattedTime}`);
+// Output: The time in Asia/Tokyo is: 06:30 PM

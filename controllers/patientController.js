@@ -12,8 +12,6 @@ exports.register = async (req, res) => {
   const { firstName, lastName, dateOfBirth, gender, email, password } =
     req.body;
 
-  
-
   try {
     // Create a new patient using the Patient model
     const patient = await Patient.addPatient({
@@ -57,10 +55,11 @@ exports.register = async (req, res) => {
 // Logs in a patient and returns access and refresh tokens
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  
+
   try {
     // Find the patient by email
     const patient = await Patient.findOne({ email });
+    console.log(patient);
 
     // If patient is not found, return an error
     if (!patient) {
