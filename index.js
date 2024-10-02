@@ -5,6 +5,7 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const passport = require("passport");
 const session = require("express-session");
+const jwt = require("jsonwebtoken");
 
 require("./config/passportSetup"); // Import Passport configuration
 
@@ -70,27 +71,30 @@ app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
 
 // Signature route
-// app.get("/signature", (req, res) => {
-//   const iat = Math.round(new Date().getTime() / 1000) - 30;
-//   const exp = iat + 60 * 60 * 2;
-//   const oHeader = { alg: "HS256", typ: "JWT" };
+app.get("/signature", (req, res) => {
 
-//   const oPayload = {
-//     app_key: SDK_KEY,
-//     tpc: "test",
-//     role_type: 1,
-//     version: 1,
-//     iat: iat,
-//     exp: exp,
-//   };
+ 
+  
+  const iat = Math.round(new Date().getTime() / 1000) - 30;
+  const exp = iat + 60 * 60 * 2;
+  const oHeader = { alg: "HS256", typ: "JWT" };
 
-//   const sdkJWT = jwt.sign(oPayload, SDK_SECRET, {
-//     algorithm: "HS256",
-//     header: oHeader,
-//   });
+  const oPayload = {
+    app_key: SDK_KEY,
+    tpc: "test",
+    role_type: 1,
+    version: 1,
+    iat: iat,
+    exp: exp,
+  };
 
-//   res.send(sdkJWT);
-// });
+  const sdkJWT = jwt.sign(oPayload, SDK_SECRET, {
+    algorithm: "HS256",
+    header: oHeader,
+  });
+
+  res.send(sdkJWT);
+});
 
 app.use(auth);
 

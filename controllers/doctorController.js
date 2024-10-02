@@ -4,6 +4,7 @@ const Doctor = require("../model/doctorModel");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
+  console.log(req.body);
 
   try {
     // Find the doctor by email
@@ -40,25 +41,23 @@ exports.login = async (req, res) => {
     await doctor.save();
 
     // Set cookies for accessToken and refreshToken
-    res.cookie('access_Token', accessToken, {
-      httpOnly: true,   // Secure flag should be added for production
-      secure: process.env.NODE_ENV === 'production',
+    res.cookie("access_token", accessToken, {
+      httpOnly: true, // Secure flag should be added for production
+      secure: true,
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
-      sameSite: 'Strict',
+      sameSite: "Strict",
     });
 
-    res.cookie('refresh_Token', refreshToken, {
+    res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      sameSite: 'Strict',
+      sameSite: "Strict",
     });
 
     // Return the tokens in response as well, if you want to access them in the frontend
     res.status(200).json({
       message: "Login successful",
-      accessToken,
-      refreshToken,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
@@ -119,18 +118,18 @@ exports.register = async (req, res) => {
       );
 
       // Set cookies for accessToken and refreshToken
-      res.cookie('access_Token', accessToken, {
+      res.cookie("access_Token", accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === "production",
         maxAge: 2 * 60 * 60 * 1000, // 2 hours
-        sameSite: 'Strict',
+        sameSite: "Strict",
       });
 
-      res.cookie('refresh_Token', refreshToken, {
+      res.cookie("refresh_Token", refreshToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
+        secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-        sameSite: 'Strict',
+        sameSite: "Strict",
       });
 
       // Respond with a success message
@@ -161,10 +160,10 @@ exports.register = async (req, res) => {
   }
 };
 
-
 exports.authMiddleware = async (req, res) => {
   const accessToken = req.cookies.access_token;
   const refreshToken = req.cookies.refresh_token;
+  console.log(req.cookies);
 
   // Check if access token exists and is valid
   if (accessToken) {
@@ -240,5 +239,3 @@ exports.authMiddleware = async (req, res) => {
       .json({ message: "Invalid or expired refresh token", error });
   }
 };
-
-
