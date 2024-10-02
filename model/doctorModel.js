@@ -83,6 +83,20 @@ const DoctorSchema = new Schema(
     languagesSpoken: {
       type: String,
     },
+    completedAppointments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "CompletedAppointment",
+        unique: false,
+      },
+    ],
+    upcomingAppointments: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "UpcomingAppointment",
+        unique: false,
+      },
+    ],
     workingHours: {
       startTime: {
         type: String, // Use String to allow flexible time format (e.g., "09:00 AM")
@@ -147,13 +161,26 @@ DoctorSchema.statics.getAllDoctors = async function () {
 // Get a specific doctor by email and populate reviews
 DoctorSchema.statics.getDoctorByID = async function (id) {
   try {
-    const doctor = await this.findOne({ _id: id }).populate({
-      path: "reviews",
-      populate: {
-        path: "user",
-        select: "firstName lastName imgUrl", // Populate user details in reviews
-      },
-    });
+    const doctor = await this.findOne({ _id: id })
+      .populate({
+        path: "reviews",
+        populate: {
+          path: "user",
+          select: "firstName lastName imgUrl", // Populate user details in reviews
+        },
+      })
+      .populate({
+        path: "completedAppointments",
+        populate: {
+          path: "docId", // Path to doctor reference in Appointment
+        },
+      })
+      .populate({
+        path: "upcomingAppointments",
+        populate: {
+          path: "docId", // Path to doctor reference in Appointment
+        },
+      });
     if (!doctor) {
       throw new Error("Doctor not found.");
     }
@@ -178,7 +205,65 @@ DoctorSchema.methods.updateRating = async function () {
     throw error;
   }
 };
+DoctorSchema.statics.addCompletedAppointment = async function (
+  docId,
+  upcomingAppointmentId,
+  completedAppointmentId
+) {
+  try {
+    // Find the docotor by ID
+    const docotor = await this.findById(docId);
 
+    if (!docotor) {
+      throw new Error("docotor not found.");
+    }
+
+    // Remove the upcoming appointment from the docotor's upcomingAppointments array
+    const updatedUpcomingAppointments = docotor.upcomingAppointments.filter(
+      (appointment) => !appointment.equals(upcomingAppointmentId)
+    );
+    docotor.upcomingAppointments = updatedUpcomingAppointments;
+
+    // Remove the upcoming appointment document from the UpcomingAppointment collection
+    await UpcomingAppointment.findByIdAndDelete(upcomingAppointmentId);
+
+    // Add the completed appointment to the completedAppointments array
+    docotor.completedAppointments.push(completedAppointmentId);
+
+    // Save the updated docotor document
+    await docotor.save();
+
+    return docotor;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+// Method to add upcoming appointment
+DoctorSchema.statics.addUpcomingAppointment = async function (
+  docId,
+  appointmentId
+) {
+  try {
+    // Find the docotor by ID
+    const doctor = await this.findById(docId);
+
+    if (!docotor) {
+      throw new Error("Doctor not found.");
+    }
+
+    // Add the appointment to the upcomingAppointments array
+    doctor.upcomingAppointments.push(appointmentId);
+
+    // Save the updated docotor document
+    await doctor.save();
+    console.log("added");
+
+    return doctor;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 const Doctor = mongoose.model("Doctor", DoctorSchema);
 
 module.exports = Doctor;
