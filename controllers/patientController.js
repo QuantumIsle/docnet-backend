@@ -40,11 +40,21 @@ exports.register = async (req, res) => {
     // Save the refresh token in the database for the patient
     patient.refreshToken = refreshToken;
     await patient.save();
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "None",
+      maxAge: 2 * 60 * 60 * 1000, // 2 hours
+    });
 
+    res.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "None",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+    });
     // Return the tokens and a success message
     res.status(200).json({
-      accessToken,
-      refreshToken,
       message: "Login successful",
     });
   } catch (error) {
@@ -59,7 +69,6 @@ exports.login = async (req, res) => {
   try {
     // Find the patient by email
     const patient = await Patient.findOne({ email });
-    console.log(patient);
 
     // If patient is not found, return an error
     if (!patient) {

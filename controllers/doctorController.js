@@ -40,14 +40,14 @@ exports.login = async (req, res) => {
     await doctor.save();
 
     // Set cookies for accessToken and refreshToken
-    res.cookie('accessToken', accessToken, {
+    res.cookie('access_Token', accessToken, {
       httpOnly: true,   // Secure flag should be added for production
       secure: process.env.NODE_ENV === 'production',
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
       sameSite: 'Strict',
     });
 
-    res.cookie('refreshToken', refreshToken, {
+    res.cookie('refresh_Token', refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -119,14 +119,14 @@ exports.register = async (req, res) => {
       );
 
       // Set cookies for accessToken and refreshToken
-      res.cookie('accessToken', accessToken, {
+      res.cookie('access_Token', accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 2 * 60 * 60 * 1000, // 2 hours
         sameSite: 'Strict',
       });
 
-      res.cookie('refreshToken', refreshToken, {
+      res.cookie('refresh_Token', refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
