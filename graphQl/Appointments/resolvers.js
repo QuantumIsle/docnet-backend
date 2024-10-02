@@ -35,43 +35,6 @@ const resolvers = {
       }
     },
   },
-
-  Mutation: {
-    createCompletedAppointment: async (_, { input }) => {
-      try {
-        const newCompletedAppointment = new CompletedAppointment(input);
-        return await newCompletedAppointment.save();
-      } catch (error) {
-        throw new Error("Error creating completed appointment");
-      }
-    },
-    createUpcomingAppointment: async (_, { input }) => {
-      try {
-        const newUpcomingAppointment = new UpcomingAppointment(input);
-        return await newUpcomingAppointment.save();
-      } catch (error) {
-        throw new Error("Error creating upcoming appointment");
-      }
-    },
-    updateCompletedAppointment: async (_, { id, input }) => {
-      try {
-        return await CompletedAppointment.findByIdAndUpdate(id, input, {
-          new: true,
-        });
-      } catch (error) {
-        throw new Error("Error updating completed appointment");
-      }
-    },
-    updateUpcomingAppointment: async (_, { id, input }) => {
-      try {
-        return await UpcomingAppointment.findByIdAndUpdate(id, input, {
-          new: true,
-        });
-      } catch (error) {
-        throw new Error("Error updating upcoming appointment");
-      }
-    },
-  },
 };
 
 module.exports = resolvers;

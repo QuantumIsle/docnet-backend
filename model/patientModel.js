@@ -79,12 +79,19 @@ const PatientSchema = new Schema(
     timeZone: {
       type: String,
       required: false,
-      enum: validTimeZones, 
+      enum: validTimeZones,
     },
-    imgUrl:{
+    imgUrl: {
       type: String,
       required: false,
     },
+    reports: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Report",
+        unique: false,
+      },
+    ],
     completedAppointments: [
       {
         type: Schema.Types.ObjectId,
@@ -167,13 +174,13 @@ PatientSchema.statics.getPatient = async function (identifier) {
         .populate({
           path: "completedAppointments",
           populate: {
-            path: "docId", // Path to doctor reference in Appointment
+            path:"docId", // Path to doctor reference in Appointment
           },
         })
         .populate({
           path: "upcomingAppointments",
           populate: {
-            path: "docId", // Path to doctor reference in Appointment
+            path:"docId", // Path to doctor reference in Appointment
           },
         });
     } catch (err) {

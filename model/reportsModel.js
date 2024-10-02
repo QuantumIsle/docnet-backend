@@ -20,15 +20,15 @@ const ReportSchema = new Schema(
       required: true,
     },
     reportType: {
-      type: String, 
+      type: String,
       required: true,
     },
     review: {
       type: String,
-      required: false, 
+      required: false,
     },
     fileUrl: {
-      type: String, 
+      type: String,
       required: false,
     },
     status: {
@@ -42,6 +42,28 @@ const ReportSchema = new Schema(
     timestamps: true, // Automatically add createdAt and updatedAt timestamps
   }
 );
+
+// Static method to get reports by doctorId and populate the patientId
+ReportSchema.statics.getReportsByDoctorId = async function (doctorId) {
+  return this.find({ doctorId })
+    .populate("patientId") // Populate the patient details
+    .exec();
+};
+
+// Static method to get reports by patientId and populate the doctorId
+ReportSchema.statics.getReportsByPatientId = async function (patientId) {
+  return this.find({ patientId })
+    .populate("doctorId") // Populate the doctor details
+    .exec();
+};
+
+// Static method to get a report by its id
+ReportSchema.statics.getReportById = async function (reportId) {
+  return this.findById(reportId)
+    .populate("doctorId") // Populate the doctor details
+    .populate("patientId") // Populate the patient details
+    .exec();
+};
 
 const Report = mongoose.model("Report", ReportSchema);
 

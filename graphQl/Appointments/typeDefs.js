@@ -8,16 +8,17 @@ const typeDefs = gql`
   type CompletedAppointment {
     id: ID!
     docId: Doctor!
-    patientId: ID!
+    patientId: Patient!
     date: Date!
     reason: String
     notes: String
     prescription: [String]
     appointmentType: String!
     outcome: String
+    reportRequest: Report
     followUpDate: String
-    createdAt: String!
-    updatedAt: String!
+    createdAt: Date!
+    updatedAt: Date!
   }
 
   # Type for UpcomingAppointment, extending the base Appointment
@@ -31,31 +32,8 @@ const typeDefs = gql`
     prescription: [String]
     appointmentType: String!
     reminderSent: Boolean!
-    createdAt: String!
-    updatedAt: String!
-  }
-
-  # Input type for creating/updating completed appointments
-  input CompletedAppointmentInput {
-    docId: ID!
-    patientId: ID!
-    date: Date!
-    reason: String
-    notes: String
-    prescription: [String]
-    outcome: String
-    followUpDate: String
-  }
-
-  # Input type for creating/updating upcoming appointments
-  input UpcomingAppointmentInput {
-    docId: ID!
-    patientId: ID!
-    date: Date!
-    reason: String
-    notes: String
-    prescription: [String]
-    reminderSent: Boolean
+    createdAt: Date!
+    updatedAt: Date!
   }
 
   # Queries for fetching appointments
@@ -64,24 +42,6 @@ const typeDefs = gql`
     getCompletedAppointmentById(id: ID!): CompletedAppointment
     getUpcomingAppointments: [UpcomingAppointment]
     getUpcomingAppointmentById(id: ID!): [UpcomingAppointment]
-  }
-
-  # Mutations for creating and updating appointments
-  type Mutation {
-    createCompletedAppointment(
-      input: CompletedAppointmentInput!
-    ): CompletedAppointment
-    createUpcomingAppointment(
-      input: UpcomingAppointmentInput!
-    ): UpcomingAppointment
-    updateCompletedAppointment(
-      id: ID!
-      input: CompletedAppointmentInput!
-    ): CompletedAppointment
-    updateUpcomingAppointment(
-      id: ID!
-      input: UpcomingAppointmentInput!
-    ): UpcomingAppointment
   }
 `;
 

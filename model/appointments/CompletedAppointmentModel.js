@@ -17,7 +17,7 @@ const CompletedAppointmentSchema = new Schema(
     outcome: {
       diagnosis: {
         type: String,
-        required: true, 
+        required: true,
       },
       prescription: [
         {
@@ -25,18 +25,21 @@ const CompletedAppointmentSchema = new Schema(
           howToUse: { type: String, required: true },
         },
       ],
-      reportRequest: [{
-        type: String, 
-        required: false,
-      }],
+      reportRequest: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "Report",
+          required: false,
+        },
+      ],
       notes: {
         type: String,
-        required: false, 
+        required: false,
       },
     },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

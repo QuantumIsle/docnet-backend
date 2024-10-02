@@ -1,9 +1,6 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
-// Connect to your default database, then switch to "mydatabase"
-const db = mongoose.connection.useDb("mydatabase");
-
 // Define the schema for upcoming appointments
 const UpcomingAppointmentSchema = new Schema(
   {

@@ -19,7 +19,7 @@ const typeDefs = gql`
     height: Float
     bloodType: String
     imgUrl: String
-    timeZone:String
+    timeZone: String
     completedAppointments: [CompletedAppointment]
     upcomingAppointments: [UpcomingAppointment]
     createdAt: String!
