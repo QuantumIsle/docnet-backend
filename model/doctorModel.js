@@ -172,18 +172,22 @@ DoctorSchema.statics.getDoctorByID = async function (id) {
       .populate({
         path: "completedAppointments",
         populate: {
-          path: "docId", // Path to doctor reference in Appointment
+          path: "patientId",
+          select: "firstName lastName", // Populate user details in reviews
         },
       })
       .populate({
         path: "upcomingAppointments",
         populate: {
-          path: "docId", // Path to doctor reference in Appointment
+          path: "patientId",
+          select: "firstName lastName", // Populate user details in reviews
         },
       });
     if (!doctor) {
       throw new Error("Doctor not found.");
     }
+    console.log(doctor);
+
     return doctor;
   } catch (error) {
     console.log(error);
@@ -246,9 +250,10 @@ DoctorSchema.statics.addUpcomingAppointment = async function (
 ) {
   try {
     // Find the docotor by ID
-    const doctor = await this.findById(docId);
+    const doctor = await this.findOne({ _id: docId });
+    console.log(doctor);
 
-    if (!docotor) {
+    if (!doctor) {
       throw new Error("Doctor not found.");
     }
 

@@ -1,5 +1,4 @@
 const Doctor = require("../../model/doctorModel");
-const Review = require("../../model/review/review");
 
 const resolvers = {
   Query: {
@@ -8,8 +7,11 @@ const resolvers = {
       return data;
     },
     getDoctorById: async (_, { id }, context) => {
+      
       if (id) {
-        return await Doctor.getDoctorByID(id);
+        console.log(id);
+        const data = await Doctor.getDoctorByID(id);
+        return data;
       }
       return await Doctor.getDoctorByID(context.user);
     },

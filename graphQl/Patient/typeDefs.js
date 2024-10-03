@@ -10,7 +10,7 @@ const typeDefs = gql`
     lastName: String!
     dateOfBirth: Date
     gender: String
-    languagesSpoken: String
+    languagesSpoken: [String]
     email: String!
     googleId: String
     ethnicity: String

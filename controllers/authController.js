@@ -86,16 +86,28 @@ exports.profile = async (req, res) => {
 
 // Logout route
 exports.logout = (req, res, next) => {
+  console.log("Logging out...");
+
+  // Handle errors during logout (if applicable)
   req.logout((err) => {
     if (err) {
-      return next(err); // Make sure to pass error to next middleware
+      return next(err); // Pass the error to the next middleware for proper handling
     }
 
-    // Clear the tokens stored in cookies (if using cookies)
-    res.clearCookie("access_token");
-    res.clearCookie("refresh_token");
+    // Clear the cookies storing tokens
+    res.clearCookie("access_token", {
+      httpOnly: true,
+      secure: true, // Use in production
+      sameSite: "None",
+    });
+    res.clearCookie("refresh_token", {
+      httpOnly: true,
+      secure: true, // Use in production
+      sameSite: "None",
+    });
 
-    // Redirect to homepage or login
-    res.redirect("/");
+    // Send successful response or redirect to login/home
+    res.status(200).json({ message: "Logged out successfully" });
   });
 };
+

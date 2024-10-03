@@ -163,7 +163,7 @@ exports.register = async (req, res) => {
 exports.authMiddleware = async (req, res) => {
   const accessToken = req.cookies.access_token;
   const refreshToken = req.cookies.refresh_token;
-  console.log(req.cookies);
+
 
   // Check if access token exists and is valid
   if (accessToken) {
