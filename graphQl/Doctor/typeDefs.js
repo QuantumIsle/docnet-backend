@@ -23,6 +23,8 @@ const typeDefs = gql`
     professionStartedYear: Int
     languagesSpoken: String
     workingHours: WorkingHours!
+    completedAppointments: [CompletedAppointment]
+    upcomingAppointments: [UpcomingAppointment]
     reviews: [Review]
     createdAt: Date!
     updatedAt: Date!
@@ -45,48 +47,10 @@ const typeDefs = gql`
     updatedAt: Date!
   }
 
-  # Patient Type Definition (assumed based on usage in reviews)
-  type Patient {
-    id: ID!
-    firstName: String!
-    lastName: String!
-    imgUrl: String
-  }
-
   # Query Type Definition
   type Query {
     getAllDoctors: [Doctor!]!
     getDoctorById(id: ID!): Doctor
-  }
-
-  # Mutation Type Definition
-  type Mutation {
-    addDoctor(
-      firstName: String!
-      lastName: String!
-      imageUrl: String
-      dateOfBirth: Date!
-      gender: String!
-      email: String!
-      password: String!
-      specialization: String!
-      contactNumber: String!
-      about: String!
-      timeZone: String
-      qualifications: [String!]!
-      professionalBackground: String!
-      professionStartedYear: Int!
-      languagesSpoken: String
-      workingHours: WorkingHoursInput!
-    ): Doctor
-
-    updateDoctorRating(id: ID!): Doctor
-  }
-
-  # Input Type for Working Hours
-  input WorkingHoursInput {
-    startTime: String!
-    endTime: String!
   }
 `;
 

@@ -251,7 +251,7 @@ exports.booking = async (req, res) => {
     const savedAppointment = await newAppointment.save();
 
     await Patient.addUpcomingAppointment(user, savedAppointment._id);
-
+    await Doctor.addUpcomingAppointment(docId, savedAppointment.id);
     // Return a success response with the saved appointment details
     return res.status(201).json({
       message: "Appointment booked successfully",
@@ -263,4 +263,55 @@ exports.booking = async (req, res) => {
       .status(500)
       .json({ error: "An error occurred while booking the appointment" });
   }
+};
+
+const cloudinary = require("cloudinary").v2;
+const multer = require("multer");
+
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+// Cloudinary configuration
+cloudinary.config({
+  cloud_name: "dwdymcrq9", // Replace with your Cloudinary cloud name
+  api_key: "937769557958765", // Replace with your Cloudinary API key
+  api_secret: "66ODAF768PrBgMQ5ESWr1_MRCf0", // Replace with your Cloudinary API secret
+});
+
+// Set up Cloudinary storage for multer
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "uploads", // Folder name in Cloudinary where files will be uploaded
+    format: async (req, file) => {
+      const formats = ["jpg", "jpeg", "png", "pdf"];
+      const extension = file.mimetype.split("/")[1];
+      return formats.includes(extension) ? extension : "jpg";
+    },
+    public_id: (req, file) => "report-" + Date.now(),
+  },
+});
+
+// Initialize the multer upload middleware
+const upload = multer({ storage: storage });
+
+// Define the reportUpload method using Cloudinary
+exports.reportUpload = async (req, res) => {
+  upload.single("report")(req, res, function (err) {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).send({ message: err.message });
+    } else if (err) {
+      return res.status(500).send({ message: err.message });
+    }
+
+    if (!req.file) {
+      return res.status(400).send({ message: "No file uploaded" });
+    }
+
+    // File successfully uploaded to Cloudinary
+    res.status(200).send({
+      message: "File uploaded successfully",
+      fileUrl: req.file.path, // Cloudinary URL of the uploaded file
+      public_id: req.file.filename, // Cloudinary public ID of the file
+    });
+  });
 };

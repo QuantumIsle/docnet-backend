@@ -72,8 +72,6 @@ app.use("/doctors", require("./routes/doctorRoutes"));
 
 // Signature route
 app.get("/signature", (req, res) => {
-
- 
   
   const iat = Math.round(new Date().getTime() / 1000) - 30;
   const exp = iat + 60 * 60 * 2;
