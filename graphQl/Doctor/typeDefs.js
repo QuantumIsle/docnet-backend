@@ -47,6 +47,35 @@ const typeDefs = gql`
     updatedAt: Date!
   }
 
+  # Mutation for updating doctor details
+  type Mutation {
+    updateDoctor(
+      id: ID!
+      firstName: String
+      lastName: String
+      imageUrl: String
+      dateOfBirth: Date
+      gender: String
+      email: String
+      specialization: String
+      contactNumber: String
+      videoVisitHours: Int
+      about: String
+      timeZone: String
+      qualifications: [String!]
+      professionalBackground: String
+      professionStartedYear: Int
+      languagesSpoken: String
+      workingHours: WorkingHoursInput
+    ): Doctor
+  }
+
+  # Working Hours Input for mutation
+  input WorkingHoursInput {
+    startTime: String!
+    endTime: String!
+  }
+
   # Query Type Definition
   type Query {
     getAllDoctors: [Doctor!]!

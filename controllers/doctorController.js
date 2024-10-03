@@ -4,7 +4,6 @@ const Doctor = require("../model/doctorModel");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-  console.log(req.body);
 
   try {
     // Find the doctor by email
@@ -164,7 +163,6 @@ exports.authMiddleware = async (req, res) => {
   const accessToken = req.cookies.access_token;
   const refreshToken = req.cookies.refresh_token;
 
-
   // Check if access token exists and is valid
   if (accessToken) {
     try {
@@ -239,3 +237,38 @@ exports.authMiddleware = async (req, res) => {
       .json({ message: "Invalid or expired refresh token", error });
   }
 };
+
+const CompletedAppointment = require('../model/appointments/CompletedAppointmentModel'); // Import the CompletedAppointment model
+
+exports.addCompletedAppointment = async (req, res) => {
+  const { docId, patientId, outcome } = req.body;
+
+  try {
+    // Validate the required fields
+    if (!docId || !patientId || !outcome || !outcome.diagnosis || !outcome.prescription) {
+      return res.status(400).json({ message: "Required fields are missing" });
+    }
+
+    // Create the completed appointment data
+    const appointmentData = {
+      docId,
+      patientId,
+      outcome: {
+        diagnosis: outcome.diagnosis,
+        prescription: outcome.prescription,
+        reportRequest: outcome.reportRequest || [],
+        notes: outcome.notes || "",
+      },
+    };
+
+    // Create and save the completed appointment
+    const newAppointment = new CompletedAppointment(appointmentData);
+    await newAppointment.save();
+
+    res.status(201).json({ message: "Completed appointment added successfully", newAppointment });
+  } catch (error) {
+    console.error("Error adding completed appointment:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+

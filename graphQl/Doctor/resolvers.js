@@ -7,13 +7,32 @@ const resolvers = {
       return data;
     },
     getDoctorById: async (_, { id }, context) => {
-      
       if (id) {
-        console.log(id);
         const data = await Doctor.getDoctorByID(id);
         return data;
       }
       return await Doctor.getDoctorByID(context.user);
+    },
+  },
+
+  Mutation: {
+    updateDoctor: async (_, { id, ...updateData }) => {
+      try {
+        // Find the doctor by ID and update the fields passed in updateData
+        const updatedDoctor = await Doctor.findByIdAndUpdate(
+          id,
+          { $set: updateData },
+          { new: true, runValidators: true }
+        );
+
+        if (!updatedDoctor) {
+          throw new Error("Doctor not found");
+        }
+
+        return updatedDoctor;
+      } catch (error) {
+        throw new Error(error.message);
+      }
     },
   },
 };

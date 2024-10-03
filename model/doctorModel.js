@@ -243,32 +243,7 @@ DoctorSchema.statics.addCompletedAppointment = async function (
   }
 };
 
-// Method to add upcoming appointment
-DoctorSchema.statics.addUpcomingAppointment = async function (
-  docId,
-  appointmentId
-) {
-  try {
-    // Find the docotor by ID
-    const doctor = await this.findOne({ _id: docId });
-    console.log(doctor);
 
-    if (!doctor) {
-      throw new Error("Doctor not found.");
-    }
-
-    // Add the appointment to the upcomingAppointments array
-    doctor.upcomingAppointments.push(appointmentId);
-
-    // Save the updated docotor document
-    await doctor.save();
-    console.log("added");
-
-    return doctor;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
 const Doctor = mongoose.model("Doctor", DoctorSchema);
 
 module.exports = Doctor;

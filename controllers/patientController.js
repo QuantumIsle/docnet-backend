@@ -211,9 +211,6 @@ exports.booking = async (req, res) => {
   const { docId, date, time } = req.body; // Extract docId, date, and time from the request body
   const user = req.user; // Get the authenticated user (assuming user is authenticated and available in req.user)
 
-  console.log(user);
-  console.log(req.body);
-
   try {
     // Check if the doctor ID, date, and time are provided
     if (!docId || !date || !time) {
@@ -229,8 +226,6 @@ exports.booking = async (req, res) => {
       "UTC"
     );
 
-    console.log(appointmentDate.toString()); // This will log the correct time in UTC
-
     // Check if the appointment date is valid and not in the past
     if (!appointmentDate.isValid() || appointmentDate.isBefore(dayjs())) {
       return res
@@ -244,8 +239,6 @@ exports.booking = async (req, res) => {
       patientId: new mongoose.Types.ObjectId(user), // Use `new` for ObjectId here too
       date: appointmentDate.toDate(), // Convert back to JavaScript Date object for storage
     });
-
-    console.log(newAppointment);
 
     // Save the appointment to the database
     const savedAppointment = await newAppointment.save();
@@ -314,4 +307,32 @@ exports.reportUpload = async (req, res) => {
       public_id: req.file.filename, // Cloudinary public ID of the file
     });
   });
+};
+
+const Review = require("../model/review/review"); 
+exports.addReview = async (req, res) => {
+  const { doctor, user, rating, comment } = req.body;
+
+  try {
+    // Check if all necessary fields are provided
+    if (!doctor || !user || !rating || !comment) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Create the review data object
+    const reviewData = {
+      doctor,
+      user,
+      rating,
+      comment,
+    };
+
+    // Call the addReview method from the Review model
+    const newReview = await Review.addReview(reviewData);
+
+    res.status(201).json({ message: "Review added successfully", newReview });
+  } catch (error) {
+    console.error("Error adding review:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
 };

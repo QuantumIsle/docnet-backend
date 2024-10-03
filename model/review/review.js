@@ -14,10 +14,6 @@ const ReviewSchema = new Schema({
     ref: "Patient", // Reference to the Patient model
     required: true,
   },
-  userImageUrl: {
-    type: String,
-    required: true,
-  },
   rating: {
     type: Number,
     min: 0,

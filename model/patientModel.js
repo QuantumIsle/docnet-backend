@@ -233,40 +233,6 @@ PatientSchema.statics.getPatients = async function () {
   }
 };
 
-// Method to add completed appointment
-PatientSchema.statics.addCompletedAppointment = async function (
-  patientId,
-  upcomingAppointmentId,
-  completedAppointmentId
-) {
-  try {
-    // Find the patient by ID
-    const patient = await this.findById(patientId);
-
-    if (!patient) {
-      throw new Error("Patient not found.");
-    }
-
-    // Remove the upcoming appointment from the patient's upcomingAppointments array
-    const updatedUpcomingAppointments = patient.upcomingAppointments.filter(
-      (appointment) => !appointment.equals(upcomingAppointmentId)
-    );
-    patient.upcomingAppointments = updatedUpcomingAppointments;
-
-    // Remove the upcoming appointment document from the UpcomingAppointment collection
-    await UpcomingAppointment.findByIdAndDelete(upcomingAppointmentId);
-
-    // Add the completed appointment to the completedAppointments array
-    patient.completedAppointments.push(completedAppointmentId);
-
-    // Save the updated patient document
-    await patient.save();
-
-    return patient;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
 
 // Method to add upcoming appointment
 PatientSchema.statics.addUpcomingAppointment = async function (
