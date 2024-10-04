@@ -41,7 +41,7 @@ const DoctorSchema = new Schema(
     },
     specialization: {
       type: String,
-      required: true,
+      required: false,
     },
     contactNumber: {
       type: String,
@@ -52,17 +52,17 @@ const DoctorSchema = new Schema(
     // New fields added here
     about: {
       type: String,
-      required: true,
+      required: false,
     },
     qualifications: [
       {
         type: String,
-        required: true,
+        required: false,
       },
     ],
     professionalBackground: {
       type: String,
-      required: true,
+      required: false,
     },
     rating: {
       type: Number,
@@ -100,11 +100,11 @@ const DoctorSchema = new Schema(
     workingHours: {
       startTime: {
         type: String, // Use String to allow flexible time format (e.g., "09:00 AM")
-        required: true,
+        required: false,
       },
       endTime: {
         type: String, // Use String to allow flexible time format (e.g., "05:00 PM")
-        required: true,
+        required: false,
       },
     },
     reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }], // Reference to Review model
@@ -243,7 +243,31 @@ DoctorSchema.statics.addCompletedAppointment = async function (
   }
 };
 
+DoctorSchema.statics.addUpcomingAppointment = async function (
+  docId,
+  appointmentId
+) {
+  try {
+    // Find the docotor by ID
+    const doctor = await this.findOne({ _id: docId });
+    console.log(doctor);
 
+    if (!doctor) {
+      throw new Error("Doctor not found.");
+    }
+
+    // Add the appointment to the upcomingAppointments array
+    doctor.upcomingAppointments.push(appointmentId);
+
+    // Save the updated docotor document
+    await doctor.save();
+    console.log("added");
+
+    return doctor;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
 const Doctor = mongoose.model("Doctor", DoctorSchema);
 
 module.exports = Doctor;

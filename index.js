@@ -67,12 +67,12 @@ app.use(passport.session());
 app.use("/auth", require("./routes/authRoutes"));
 
 // Routes
+app.use("/appointments", require("./routes/appointmentRoutes"));
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
 
 // Signature route
 app.get("/signature", (req, res) => {
-  
   const iat = Math.round(new Date().getTime() / 1000) - 30;
   const exp = iat + 60 * 60 * 2;
   const oHeader = { alg: "HS256", typ: "JWT" };

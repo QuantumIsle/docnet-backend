@@ -25,12 +25,12 @@ const PatientSchema = new Schema(
     },
     dateOfBirth: {
       type: Date,
-      required: false,
+      required: true,
     },
     gender: {
       type: String,
       enum: ["male", "female"],
-      required: false,
+      required: true,
     },
     languagesSpoken: [
       {
@@ -78,7 +78,7 @@ const PatientSchema = new Schema(
     },
     timeZone: {
       type: String,
-      required: false,
+      required: true,
       enum: validTimeZones,
     },
     imgUrl: {
@@ -174,13 +174,13 @@ PatientSchema.statics.getPatient = async function (identifier) {
         .populate({
           path: "completedAppointments",
           populate: {
-            path:"docId", // Path to doctor reference in Appointment
+            path: "docId", // Path to doctor reference in Appointment
           },
         })
         .populate({
           path: "upcomingAppointments",
           populate: {
-            path:"docId", // Path to doctor reference in Appointment
+            path: "docId", // Path to doctor reference in Appointment
           },
         });
     } catch (err) {
@@ -233,7 +233,6 @@ PatientSchema.statics.getPatients = async function () {
   }
 };
 
-
 // Method to add upcoming appointment
 PatientSchema.statics.addUpcomingAppointment = async function (
   patientId,
@@ -249,6 +248,40 @@ PatientSchema.statics.addUpcomingAppointment = async function (
 
     // Add the appointment to the upcomingAppointments array
     patient.upcomingAppointments.push(appointmentId);
+
+    // Save the updated patient document
+    await patient.save();
+
+    return patient;
+  } catch (error) {
+    throw new Error(error.message);
+  }
+};
+
+PatientSchema.statics.addCompletedAppointment = async function (
+  patientId,
+  upcomingAppointmentId,
+  completedAppointmentId
+) {
+  try {
+    // Find the patient by ID
+    const patient = await this.findById(patientId);
+
+    if (!patient) {
+      throw new Error("Patient not found.");
+    }
+
+    // Remove the upcoming appointment from the patient's upcomingAppointments array
+    const updatedUpcomingAppointments = patient.upcomingAppointments.filter(
+      (appointment) => !appointment.equals(upcomingAppointmentId)
+    );
+    patient.upcomingAppointments = updatedUpcomingAppointments;
+
+    // Remove the upcoming appointment document from the UpcomingAppointment collection
+    await UpcomingAppointment.findByIdAndDelete(upcomingAppointmentId);
+
+    // Add the completed appointment to the completedAppointments array
+    patient.completedAppointments.push(completedAppointmentId);
 
     // Save the updated patient document
     await patient.save();

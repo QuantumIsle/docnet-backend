@@ -71,35 +71,20 @@ exports.register = async (req, res) => {
     gender,
     email,
     password,
-    specialization,
-    contactNumber,
-    education,
-    languagesSpoken,
-    about,
-    qualifications,
-    professionalBackground,
-    professionStartedYear,
-    imageUrl,
+    timeZone,
   } = req.body;
+  console.log(req.body);
 
   try {
-    // Create a new doctor
-    const newDoctor = await Doctor.addDoctor({
+    // Create a new patient using the Patient model
+    const doctor = await Doctor.addPatient({
       firstName,
       lastName,
       dateOfBirth,
       gender,
       email,
       password,
-      specialization,
-      contactNumber,
-      education,
-      languagesSpoken,
-      about,
-      qualifications,
-      professionalBackground,
-      professionStartedYear,
-      imageUrl,
+      timeZone,
     });
 
     if (newDoctor) {
@@ -134,21 +119,6 @@ exports.register = async (req, res) => {
       // Respond with a success message
       res.status(201).json({
         message: "Doctor registered successfully",
-        doctor: {
-          id: newDoctor._id,
-          firstName: newDoctor.firstName,
-          lastName: newDoctor.lastName,
-          specialization: newDoctor.specialization,
-          contactNumber: newDoctor.contactNumber,
-          email: newDoctor.email,
-          about: newDoctor.about,
-          qualifications: newDoctor.qualifications,
-          professionalBackground: newDoctor.professionalBackground,
-          professionStartedYear: newDoctor.professionStartedYear,
-          rating: newDoctor.rating,
-          languagesSpoken: newDoctor.languagesSpoken,
-          imageUrl: newDoctor.imageUrl,
-        },
       });
     }
   } catch (error) {
@@ -238,14 +208,20 @@ exports.authMiddleware = async (req, res) => {
   }
 };
 
-const CompletedAppointment = require('../model/appointments/CompletedAppointmentModel'); // Import the CompletedAppointment model
+const CompletedAppointment = require("../model/appointments/CompletedAppointmentModel"); // Import the CompletedAppointment model
 
 exports.addCompletedAppointment = async (req, res) => {
-  const { docId, patientId, outcome } = req.body;
-
+  const { patientId, outcome } = req.body;
+  const docId = req.user;
   try {
     // Validate the required fields
-    if (!docId || !patientId || !outcome || !outcome.diagnosis || !outcome.prescription) {
+    if (
+      !docId ||
+      !patientId ||
+      !outcome ||
+      !outcome.diagnosis ||
+      !outcome.prescription
+    ) {
       return res.status(400).json({ message: "Required fields are missing" });
     }
 
@@ -265,10 +241,12 @@ exports.addCompletedAppointment = async (req, res) => {
     const newAppointment = new CompletedAppointment(appointmentData);
     await newAppointment.save();
 
-    res.status(201).json({ message: "Completed appointment added successfully", newAppointment });
+    res.status(201).json({
+      message: "Completed appointment added successfully",
+      newAppointment,
+    });
   } catch (error) {
     console.error("Error adding completed appointment:", error);
     res.status(500).json({ message: "Server error", error });
   }
 };
-

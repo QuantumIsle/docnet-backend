@@ -9,8 +9,16 @@ const mongoose = require("mongoose");
 
 // Registers a new patient
 exports.register = async (req, res) => {
-  const { firstName, lastName, dateOfBirth, gender, email, password } =
-    req.body;
+  const {
+    firstName,
+    lastName,
+    dateOfBirth,
+    gender,
+    email,
+    password,
+    timeZone,
+  } = req.body;
+  console.log(req.body);
 
   try {
     // Create a new patient using the Patient model
@@ -21,6 +29,7 @@ exports.register = async (req, res) => {
       gender,
       email,
       password,
+      timeZone,
     });
 
     // If patient is created successfully, send response
@@ -260,7 +269,6 @@ exports.booking = async (req, res) => {
 
 const cloudinary = require("cloudinary").v2;
 const multer = require("multer");
-
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
 // Cloudinary configuration
@@ -309,10 +317,10 @@ exports.reportUpload = async (req, res) => {
   });
 };
 
-const Review = require("../model/review/review"); 
+const Review = require("../model/review/review");
 exports.addReview = async (req, res) => {
-  const { doctor, user, rating, comment } = req.body;
-
+  const { doctor, rating, comment } = req.body;
+  const user = req.user;
   try {
     // Check if all necessary fields are provided
     if (!doctor || !user || !rating || !comment) {
