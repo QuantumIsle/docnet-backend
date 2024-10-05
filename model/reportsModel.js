@@ -17,11 +17,11 @@ const ReportSchema = new Schema(
     appointmentId: {
       type: Schema.Types.ObjectId,
       ref: "CompletedAppointment", // Reference to the completed appointment
-      required: true,
+      required: false,
     },
     reportType: {
       type: String,
-      required: true,
+      required: false,
     },
     review: {
       type: String,
@@ -35,7 +35,7 @@ const ReportSchema = new Schema(
       type: String,
       enum: ["Pending", "Completed", "Reviewed"],
       default: "Pending",
-      required: true,
+      required: false,
     },
   },
   {
