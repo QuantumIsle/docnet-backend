@@ -267,57 +267,169 @@ exports.booking = async (req, res) => {
   }
 };
 
-const cloudinary = require("cloudinary").v2;
+const fs = require("fs");
+const { google } = require("googleapis");
 const multer = require("multer");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
+// Setup multer to handle file upload
+const upload = multer({ dest: "uploads/" }); // Save files to the 'uploads' directory
 
-// Cloudinary configuration
-cloudinary.config({
-  cloud_name: "dwdymcrq9", // Replace with your Cloudinary cloud name
-  api_key: "937769557958765", // Replace with your Cloudinary API key
-  api_secret: "66ODAF768PrBgMQ5ESWr1_MRCf0", // Replace with your Cloudinary API secret
-});
+const apikeys = require("./token.json");
+const SCOPE = ["https://www.googleapis.com/auth/drive"];
 
-// Set up Cloudinary storage for multer
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "uploads", // Folder name in Cloudinary where files will be uploaded
-    format: async (req, file) => {
-      const formats = ["jpg", "jpeg", "png", "pdf"];
-      const extension = file.mimetype.split("/")[1];
-      return formats.includes(extension) ? extension : "jpg";
-    },
-    public_id: (req, file) => "report-" + Date.now(),
-  },
-});
+// A Function that can provide access to google drive api
+async function authorize() {
+  const jwtClient = new google.auth.JWT(
+    apikeys.client_email,
+    null,
+    apikeys.private_key,
+    SCOPE
+  );
 
-// Initialize the multer upload middleware
-const upload = multer({ storage: storage });
+  await jwtClient.authorize();
 
-// Define the reportUpload method using Cloudinary
-exports.reportUpload = async (req, res) => {
-  upload.single("report")(req, res, function (err) {
-    if (err instanceof multer.MulterError) {
-      return res.status(400).send({ message: err.message });
-    } else if (err) {
-      return res.status(500).send({ message: err.message });
-    }
+  return jwtClient;
+}
 
-    if (!req.file) {
-      return res.status(400).send({ message: "No file uploaded" });
-    }
+// A Function that will upload the desired file to google drive folder
+async function uploadFile(authClient, filePath, fileName) {
+  return new Promise((resolve, reject) => {
+    const drive = google.drive({ version: "v3", auth: authClient });
 
-    // File successfully uploaded to Cloudinary
-    res.status(200).send({
-      message: "File uploaded successfully",
-      fileUrl: req.file.path, // Cloudinary URL of the uploaded file
-      public_id: req.file.filename, // Cloudinary public ID of the file
-    });
+    const fileMetaData = {
+      name: fileName, // Set file name from the request
+      parents: ["1wAobbjcMFobmXRpaInTc20o19NJZVJz1"], // Folder ID where the file will be uploaded
+    };
+
+    const media = {
+      body: fs.createReadStream(filePath), // Read the file from file system
+      mimeType: "application/pdf", // Set MIME type for PDF
+    };
+
+    drive.files.create(
+      {
+        resource: fileMetaData,
+        media: media,
+        fields: "id",
+      },
+      function (error, file) {
+        if (error) {
+          return reject(error);
+        }
+        resolve(file.data.id); // Return file ID after successful upload
+      }
+    );
   });
+}
+
+// A Function to set file permissions to be shareable
+async function setFilePublic(authClient, fileId) {
+  const drive = google.drive({ version: "v3", auth: authClient });
+  return new Promise((resolve, reject) => {
+    drive.permissions.create(
+      {
+        fileId: fileId,
+        resource: {
+          role: "reader", // Set permission to reader
+          type: "anyone", // Accessible by anyone
+        },
+      },
+      function (error, permission) {
+        if (error) {
+          return reject(error);
+        }
+        resolve(fileId); // Return the file ID again for the next step
+      }
+    );
+  });
+}
+
+// A Function to get the shareable link
+async function getShareableLink(authClient, fileId) {
+  const drive = google.drive({ version: "v3", auth: authClient });
+  return new Promise((resolve, reject) => {
+    drive.files.get(
+      {
+        fileId: fileId,
+        fields: "webViewLink", // Retrieve the link to view the file
+      },
+      function (error, file) {
+        if (error) {
+          return reject(error);
+        }
+        resolve(file.data.webViewLink); // Return the web link
+      }
+    );
+  });
+}
+
+// API to handle file upload from front-end
+const Report = require("./../model/reportsModel");
+
+exports.reportUpload = async (req, res) => {
+  try {
+    // Extract the user (doctor or patient) and reportId from the request
+    const userId = req.user; // Assuming the user info comes from middleware
+    const { reportId } = req.body; // Assuming reportId is sent in the body
+
+    if (!reportId) {
+      return res.status(400).json({ message: "Report ID is required" });
+    }
+
+    const { file } = req;
+    if (!file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const { originalname, path } = file;
+    console.log(`File received: ${originalname} for report ID: ${reportId}`);
+
+    // Authenticate Google Drive
+    const authClient = await authorize();
+
+    // Upload the file to Google Drive
+    const fileId = await uploadFile(authClient, path, originalname);
+
+    // Set file permission to public
+    await setFilePublic(authClient, fileId);
+
+    // Get the shareable link
+    const shareableLink = await getShareableLink(authClient, fileId);
+
+    // Find the report by reportId
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found" });
+    }
+
+    // Update the report with the new file URL and status
+    report.fileUrl = shareableLink; // Set the file URL
+    report.status = "Completed"; // Update the status to "Completed" (or other relevant status)
+
+    // Save the updated report to the database
+    await report.save();
+
+    // Respond with the updated report data and shareable link
+    res.status(200).json({
+      message: "File uploaded and report updated successfully",
+      link: shareableLink,
+    });
+  } catch (error) {
+    console.error("Error uploading file and updating report:", error);
+    res.status(500).json({ message: "Error uploading file", error });
+  } finally {
+    // Clean up the uploaded file
+    if (req.file && req.file.path) {
+      fs.unlinkSync(req.file.path); // Delete the file from 'uploads' after processing
+    }
+  }
 };
 
+// Middleware to handle file upload
+exports.uploadMiddleware = upload.single("file"); // 'file' is the field name expected in the form data
+
 const Review = require("../model/review/review");
+
 exports.addReview = async (req, res) => {
   const { doctor, rating, comment } = req.body;
   const user = req.user;

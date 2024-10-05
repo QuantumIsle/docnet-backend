@@ -15,8 +15,8 @@ const typeDefs = gql`
   }
 
   type Query {
-    getReportsByDoctorId(doctorId: ID): [Report]
-    getReportsByPatientId(patientId: ID): [Report]
+    getReportsByDoctorId: [Report]
+    getReportsByPatientId: [Report]
     getReportById(id: ID!): Report
   }
 `;

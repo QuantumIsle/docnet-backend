@@ -16,6 +16,8 @@ const resolvers = {
     getReportsByPatientId: async (_, __, context) => {
       try {
         const patientId = context.user;
+        console.log(patientId);
+
         return await Report.getReportsByPatientId(patientId);
       } catch (error) {
         throw new Error(error.message);

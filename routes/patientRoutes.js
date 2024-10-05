@@ -10,7 +10,12 @@ router.post("/login", patientController.login);
 
 router.post("/auth-check", patientController.authMiddleware);
 
-router.post("/report-upload", auth, patientController.reportUpload);
+router.post(
+  "/report-upload",
+  auth,
+  patientController.uploadMiddleware,
+  patientController.reportUpload
+);
 //patient booking routes
 router.post("/booking", auth, patientController.booking);
 
