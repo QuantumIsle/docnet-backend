@@ -79,7 +79,7 @@ const typeDefs = gql`
   # Query Type Definition
   type Query {
     getAllDoctors: [Doctor!]!
-    getDoctorById(id: ID!): Doctor
+    getDoctorById(id: ID): Doctor
   }
 `;
 
