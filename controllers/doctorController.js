@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Doctor = require("../model/doctorModel");
-
+const Patient = require("../model/patientModel");
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -77,7 +77,7 @@ exports.register = async (req, res) => {
 
   try {
     // Create a new patient using the Patient model
-    const doctor = await Doctor.addPatient({
+    const doctor = await Doctor.addDoctor({
       firstName,
       lastName,
       dateOfBirth,
@@ -211,17 +211,13 @@ exports.authMiddleware = async (req, res) => {
 const CompletedAppointment = require("../model/appointments/CompletedAppointmentModel"); // Import the CompletedAppointment model
 
 exports.addCompletedAppointment = async (req, res) => {
-  const { patientId, outcome } = req.body;
+  const { patientId, outcome, appointmentId } = req.body;
+  console.log(req.body);
+
   const docId = req.user;
   try {
     // Validate the required fields
-    if (
-      !docId ||
-      !patientId ||
-      !outcome ||
-      !outcome.diagnosis ||
-      !outcome.prescription
-    ) {
+    if (!docId || !outcome.diagnosis || !outcome.prescription) {
       return res.status(400).json({ message: "Required fields are missing" });
     }
 
@@ -232,7 +228,6 @@ exports.addCompletedAppointment = async (req, res) => {
       outcome: {
         diagnosis: outcome.diagnosis,
         prescription: outcome.prescription,
-        reportRequest: outcome.reportRequest || [],
         notes: outcome.notes || "",
       },
     };
@@ -240,6 +235,17 @@ exports.addCompletedAppointment = async (req, res) => {
     // Create and save the completed appointment
     const newAppointment = new CompletedAppointment(appointmentData);
     await newAppointment.save();
+
+    await Doctor.addCompletedAppointment(
+      docId,
+      appointmentId,
+      newAppointment._id
+    );
+    await Patient.addCompletedAppointment(
+      patientId,
+      appointmentId,
+      newAppointment._id
+    );
 
     res.status(201).json({
       message: "Completed appointment added successfully",
