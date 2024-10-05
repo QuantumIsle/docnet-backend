@@ -72,12 +72,12 @@ exports.register = async (req, res) => {
     email,
     password,
     timeZone,
+    phoneNumber,
   } = req.body;
   console.log(req.body);
-
   try {
     // Create a new patient using the Patient model
-    const doctor = await Doctor.addDoctor({
+    const newDoctor = await Doctor.addDoctor({
       firstName,
       lastName,
       dateOfBirth,
@@ -85,6 +85,7 @@ exports.register = async (req, res) => {
       email,
       password,
       timeZone,
+      contactNumber: phoneNumber,
     });
 
     if (newDoctor) {
@@ -117,11 +118,13 @@ exports.register = async (req, res) => {
       });
 
       // Respond with a success message
-      res.status(201).json({
+      res.status(200).json({
         message: "Doctor registered successfully",
       });
     }
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({
       message: "Server error, unable to register doctor",
       error: error.message,
