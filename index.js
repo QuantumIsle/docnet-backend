@@ -77,8 +77,7 @@ const Doctor = require("./model/doctorModel");
 const Patient = require("./model/patientModel");
 app.get("/signature", async (req, res) => {
   const { id } = req.query; // Get the appointmentId from query parameters
-  console.log("meeting :"+id);
-  
+
   try {
     // Get the user ID from req.user (populated by your auth middleware)
     const userId = req.user;
@@ -92,7 +91,7 @@ app.get("/signature", async (req, res) => {
     const doctor = await Doctor.findById(userId);
     if (doctor) {
       isDoctor = true;
-      role_type = 2; // Role type for host (doctor)
+      role_type = 0; // Role type for host (doctor)
     }
 
     // If not a doctor, check if the user is a patient
@@ -127,6 +126,7 @@ app.get("/signature", async (req, res) => {
       algorithm: "HS256",
       header: oHeader,
     });
+  
 
     res.send(sdkJWT);
   } catch (error) {
