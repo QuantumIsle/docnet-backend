@@ -17,7 +17,7 @@ const ReportSchema = new Schema(
     appointmentId: {
       type: Schema.Types.ObjectId,
       ref: "CompletedAppointment", // Reference to the completed appointment
-      required: true,
+      required: false,
     },
     reportType: {
       type: String,
@@ -52,9 +52,10 @@ ReportSchema.statics.getReportsByDoctorId = async function (doctorId) {
 
 // Static method to get reports by patientId and populate the doctorId
 ReportSchema.statics.getReportsByPatientId = async function (patientId) {
-  return this.find({ patientId })
+  const data = this.find({ patientId })
     .populate("doctorId") // Populate the doctor details
     .exec();
+  return data;
 };
 
 // Static method to get a report by its id

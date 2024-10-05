@@ -186,7 +186,7 @@ DoctorSchema.statics.getDoctorByID = async function (id) {
     if (!doctor) {
       throw new Error("Doctor not found.");
     }
-    console.log(doctor);
+    
 
     return doctor;
   } catch (error) {
@@ -250,7 +250,7 @@ DoctorSchema.statics.addUpcomingAppointment = async function (
   try {
     // Find the docotor by ID
     const doctor = await this.findOne({ _id: docId });
-    console.log(doctor);
+ 
 
     if (!doctor) {
       throw new Error("Doctor not found.");
@@ -261,7 +261,7 @@ DoctorSchema.statics.addUpcomingAppointment = async function (
 
     // Save the updated docotor document
     await doctor.save();
-    console.log("added");
+
 
     return doctor;
   } catch (error) {
