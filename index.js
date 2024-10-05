@@ -71,30 +71,69 @@ app.use("/appointments", require("./routes/appointmentRoutes"));
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
 
-// Signature route
-app.get("/signature", (req, res) => {
-  const iat = Math.round(new Date().getTime() / 1000) - 30;
-  const exp = iat + 60 * 60 * 2;
-  const oHeader = { alg: "HS256", typ: "JWT" };
-
-  const oPayload = {
-    app_key: SDK_KEY,
-    tpc: "test",
-    role_type: 1,
-    version: 1,
-    iat: iat,
-    exp: exp,
-  };
-
-  const sdkJWT = jwt.sign(oPayload, SDK_SECRET, {
-    algorithm: "HS256",
-    header: oHeader,
-  });
-
-  res.send(sdkJWT);
-});
-
 app.use(auth);
+
+const Doctor = require("./model/doctorModel");
+const Patient = require("./model/patientModel");
+app.get("/signature", async (req, res) => {
+  const { id } = req.query; // Get the appointmentId from query parameters
+  console.log("meeting :"+id);
+  
+  try {
+    // Get the user ID from req.user (populated by your auth middleware)
+    const userId = req.user;
+
+    // Check if the user is a doctor or patient
+    let isDoctor = false;
+    let isPatient = false;
+    let role_type = 1; // Default role type
+
+    // First, check if the user is a doctor
+    const doctor = await Doctor.findById(userId);
+    if (doctor) {
+      isDoctor = true;
+      role_type = 2; // Role type for host (doctor)
+    }
+
+    // If not a doctor, check if the user is a patient
+    if (!isDoctor) {
+      const patient = await Patient.findById(userId);
+      if (patient) {
+        isPatient = true;
+        role_type = 1; // Role type for participant (patient)
+      }
+    }
+
+    // If the user is neither a doctor nor a patient, handle it appropriately
+    if (!isDoctor && !isPatient) {
+      return res.status(400).send("User not found in the system.");
+    }
+
+    // Prepare JWT payload
+    const iat = Math.round(new Date().getTime() / 1000) - 30;
+    const exp = iat + 60 * 60 * 2; // 2-hour expiry
+    const oHeader = { alg: "HS256", typ: "JWT" };
+    const oPayload = {
+      app_key: SDK_KEY,
+      tpc: id, // Use the appointmentId as the unique meeting identifier
+      role_type: role_type, // Host (doctor) or participant (patient)
+      version: 1,
+      iat: iat,
+      exp: exp,
+    };
+
+    // Sign the JWT
+    const sdkJWT = jwt.sign(oPayload, SDK_SECRET, {
+      algorithm: "HS256",
+      header: oHeader,
+    });
+
+    res.send(sdkJWT);
+  } catch (error) {
+    console.log("Error in /signature route:", error);
+    res.status(500).send("Internal server error");
+  }
+});
 
 // Apollo Server setup
 const server = new ApolloServer({
