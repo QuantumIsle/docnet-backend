@@ -41,7 +41,7 @@ const typeDefs = gql`
     getCompletedAppointments: [CompletedAppointment]
     getCompletedAppointmentById(id: ID!): CompletedAppointment
     getUpcomingAppointments: [UpcomingAppointment]
-    getUpcomingAppointmentById(id: ID!): [UpcomingAppointment]
+    getUpcomingAppointmentById(id: ID!): UpcomingAppointment
   }
 `;
 

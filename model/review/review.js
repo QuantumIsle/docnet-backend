@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
-const Doctor = require("../doctorModel"); // Import the Doctor model
 
 // Define the schema for reviews
 const ReviewSchema = new Schema({
@@ -37,12 +36,16 @@ ReviewSchema.statics.addReview = async function (reviewData) {
     await newReview.save();
 
     // After saving, add the review to the doctor's review array
-    await Doctor.findByIdAndUpdate(reviewData.doctor, {
-      $push: { reviews: newReview._id },
-    });
+    const doctor = await require("../doctorModel").findByIdAndUpdate(
+      reviewData.doctor,
+      {
+        $push: { reviews: newReview._id },
+      }
+    );
+    
 
     // Update the doctor's rating
-    const doctor = await Doctor.findById(reviewData.doctor);
+
     if (doctor) {
       await doctor.updateRating();
     }

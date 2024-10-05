@@ -433,6 +433,9 @@ const Review = require("../model/review/review");
 exports.addReview = async (req, res) => {
   const { doctor, rating, comment } = req.body;
   const user = req.user;
+
+  console.log(req.body);
+  console.log(user);
   try {
     // Check if all necessary fields are provided
     if (!doctor || !user || !rating || !comment) {
