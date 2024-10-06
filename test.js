@@ -1,99 +1,37 @@
-const fs = require("fs");
-const { google } = require("googleapis");
+const moment = require("moment-timezone");
 
-const apikeys = require("./controllers/token.json");
-const SCOPE = ["https://www.googleapis.com/auth/drive"];
+const convertUtcToTimeZone = (time, timeZone) => {
+  return moment.utc(time, "HH:mm").tz(timeZone).format("HH:mm");
+};
 
-// A Function that can provide access to google drive api
-async function authorize() {
-  const jwtClient = new google.auth.JWT(
-    apikeys.client_email,
-    null,
-    apikeys.private_key,
-    SCOPE
-  );
+const generateTimeSlots = (startTime, endTime, timeZone) => {
+  const slots = [];
+  const format = "HH:mm"; // Format for the input UTC time
 
-  await jwtClient.authorize();
+  const start = moment.utc(startTime, format); // Parse the start time as UTC
+  let end = moment.utc(endTime, format); // Parse the end time as UTC
 
-  return jwtClient;
-}
+  // If endTime is earlier than startTime, treat endTime as on the next day
+  if (end.isBefore(start)) {
+    end.add(1, "day");
+  }
 
-// A Function that will upload the desired file to google drive folder
-async function uploadFile(authClient) {
-  return new Promise((resolve, reject) => {
-    const drive = google.drive({ version: "v3", auth: authClient });
+  let current = start.clone();
 
-    var fileMetaData = {
-      name: "test.pdf",
-      parents: ["1wAobbjcMFobmXRpaInTc20o19NJZVJz1"], // A folder ID to which file will get uploaded
-    };
-
-    drive.files.create(
-      {
-        resource: fileMetaData,
-        media: {
-          body: fs.createReadStream("test.pdf"), // files that will get uploaded
-          mimeType: "application/pdf", // correct MIME type for PDF
-        },
-        fields: "id",
-      },
-      function (error, file) {
-        if (error) {
-          return reject(error);
-        }
-        resolve(file.data.id); // return the file ID
-      }
+  // Generate 30-minute time slots
+  while (current.isBefore(end)) {
+    // Convert each slot from UTC to the patient's time zone
+    const slotInPatientTimeZone = convertUtcToTimeZone(
+      current.format(format),
+      timeZone
     );
-  });
-}
+    slots.push(slotInPatientTimeZone);
 
-// A Function to set file permissions to be shareable
-async function setFilePublic(authClient, fileId) {
-  const drive = google.drive({ version: "v3", auth: authClient });
-  return new Promise((resolve, reject) => {
-    drive.permissions.create(
-      {
-        fileId: fileId,
-        resource: {
-          role: "reader", // set permission to reader
-          type: "anyone", // accessible by anyone
-        },
-      },
-      function (error, permission) {
-        if (error) {
-          return reject(error);
-        }
-        resolve(fileId); // return the file ID again for the next step
-      }
-    );
-  });
-}
+    current = current.add(30, "minutes");
+  }
 
-// A Function to get the shareable link
-async function getShareableLink(authClient, fileId) {
-  const drive = google.drive({ version: "v3", auth: authClient });
-  return new Promise((resolve, reject) => {
-    drive.files.get(
-      {
-        fileId: fileId,
-        fields: "webViewLink", // retrieve the link to view the file
-      },
-      function (error, file) {
-        if (error) {
-          return reject(error);
-        }
-        resolve(file.data.webViewLink); // return the web link
-      }
-    );
-  });
-}
+  console.log("Generated time slots:", slots);
+  return slots;
+};
 
-// Main function to upload the file and get the shareable link
-authorize()
-  .then(async (authClient) => {
-    const fileId = await uploadFile(authClient); // Upload file and get its ID
-    await setFilePublic(authClient, fileId); // Set the file as public
-    const link = await getShareableLink(authClient, fileId); // Get the shareable link
-    console.log("Shareable link:", link); // Print the shareable link
-  })
-  .catch(console.error);
+console.log(generateTimeSlots("15:00", "01:00", "America/New_York"));

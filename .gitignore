@@ -128,5 +128,4 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-controllers/client_secret_571267200243-q48pl71i6p10hrc48qfai9jdi4rncb4n.apps.googleusercontent.com.json
-controllers/token.json
+
