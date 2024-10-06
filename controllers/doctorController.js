@@ -215,12 +215,28 @@ exports.authMiddleware = async (req, res) => {
 const CompletedAppointment = require("../model/appointments/CompletedAppointmentModel"); // Import the CompletedAppointment model
 const Report = require("../model/reportsModel"); // Import the Report model
 
+const nodemailer = require("nodemailer");
+
+// Setup email transporter
+const transporter = nodemailer.createTransport({
+  service: "gmail", // You can use other email services like 'Outlook', 'Yahoo', etc.
+  auth: {
+    user: "mihanfernando23@gmail.com", // Replace with your email
+    pass: "buyt jvvq vbdf baag", // Replace with your email password (or use App Passwords)
+  },
+});
+
 exports.addCompletedAppointment = async (req, res) => {
   const { patientId, outcome, appointmentId } = req.body;
   console.log(req.body);
 
   const docId = req.user;
+
   try {
+    // Find patient and doctor information
+    const patientData = await Patient.findOne({ _id: patientId });
+    const doctorData = await Doctor.findOne({ _id: docId });
+
     // Validate the required fields
     if (!docId || !outcome.diagnosis || !outcome.prescription) {
       return res.status(400).json({ message: "Required fields are missing" });
@@ -240,6 +256,8 @@ exports.addCompletedAppointment = async (req, res) => {
     // Create and save the completed appointment
     const newAppointment = new CompletedAppointment(appointmentData);
     await newAppointment.save();
+
+    // Link completed appointment to Doctor and Patient
     await Doctor.addCompletedAppointment(
       docId,
       appointmentId,
@@ -250,6 +268,7 @@ exports.addCompletedAppointment = async (req, res) => {
       appointmentId,
       newAppointment._id
     );
+
     // Check if reportRequest is present, if yes, create a report
     if (outcome.reportRequest) {
       const reportData = {
@@ -268,9 +287,57 @@ exports.addCompletedAppointment = async (req, res) => {
       console.log("Report created:", newReport);
     }
 
-    res.status(201).json({
-      message: "Completed appointment added successfully",
-      newAppointment,
+    // Send an email with the diagnosis to the patient
+    const mailOptions = {
+      from: '"DocnetAI Support" <support@docnetai.com>', // Professional sender format
+      to: patientData.email, // Receiver's email address (the patient's email)
+      subject: "Your Diagnosis from DocnetAI", // Professional subject line with company name
+      text: `Dear ${patientData.firstName},
+
+We are writing to inform you about your recent appointment with Dr. ${
+        doctorData.firstName
+      } ${doctorData.lastName}. Below are the details of your diagnosis:
+
+Diagnosis: ${outcome.diagnosis}
+
+Prescriptions:
+${outcome.prescription
+  .map((item, index) => `${index + 1}. ${item.medicine} - ${item.howToUse}`)
+  .join("\n")}
+
+Additional Notes: ${outcome.notes || "No additional notes"}
+
+If you have any questions or concerns, please feel free to reach out to our support team.
+
+Thank you for choosing DocnetAI.
+
+Best regards,
+The DocnetAI Support Team
+support@docnetai.com
+www.docnetai.com
+`,
+    };
+
+    // Send the email with the diagnosis
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res
+          .status(500)
+          .json({
+            message: "Appointment added but failed to send email",
+            error,
+          });
+      } else {
+        console.log("Email sent:", info.response);
+
+        // Return a success response with the newly created appointment
+        return res.status(201).json({
+          message:
+            "Completed appointment added successfully and email sent to the patient",
+          newAppointment,
+        });
+      }
     });
   } catch (error) {
     console.error("Error adding completed appointment:", error);
