@@ -37,7 +37,7 @@ const SDK_KEY = process.env.SDK_KEY;
 const SDK_SECRET = process.env.SDK_SECRET;
 
 const corsOptions = {
-  //origin: process.env.FRONTEND_URL, // React frontend's URL
+  origin: process.env.FRONTEND_URL, // React frontend's URL
   credentials: true, // Allow cookies (credentials) to be sent and received
 };
 
@@ -71,7 +71,7 @@ app.use("/appointments", require("./routes/appointmentRoutes"));
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
 
-// app.use(auth);
+app.use(auth);
 
 const Doctor = require("./model/doctorModel");
 const Patient = require("./model/patientModel");
