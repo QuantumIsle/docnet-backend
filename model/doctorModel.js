@@ -27,7 +27,7 @@ const DoctorSchema = new Schema(
     },
     gender: {
       type: String,
-      enum: ["male", "female"],
+      enum: ["male", "female","other"],
       required: true,
     },
     email: {

@@ -37,7 +37,7 @@ const SDK_KEY = process.env.SDK_KEY;
 const SDK_SECRET = process.env.SDK_SECRET;
 
 const corsOptions = {
-  origin: "http://localhost:5173", // React frontend's URL
+  origin: process.env.FRONTEND_URL, // React frontend's URL
   credentials: true, // Allow cookies (credentials) to be sent and received
 };
 
