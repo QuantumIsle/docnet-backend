@@ -37,9 +37,13 @@ const CompletedAppointmentSchema = new Schema(
         required: false,
       },
     },
+    date: {
+      type: Date,
+      default: Date.now, // Automatically set the current date
+    },
   },
   {
-    timestamps: true,
+    timestamps: true, // Automatically adds createdAt and updatedAt fields
   }
 );
 

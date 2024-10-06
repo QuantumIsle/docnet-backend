@@ -17,8 +17,6 @@ const resolvers = {
 
   Mutation: {
     updateDoctor: async (_, { id, ...updateData }) => {
-      console.log("fired");
-
       try {
         // Find the doctor by ID and update the fields passed in updateData
         const updatedDoctor = await Doctor.findByIdAndUpdate(

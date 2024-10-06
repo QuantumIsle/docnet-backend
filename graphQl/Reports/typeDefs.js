@@ -1,6 +1,7 @@
 const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
+  scalar Date
   type Report {
     id: ID!
     doctorId: Doctor!
@@ -10,8 +11,8 @@ const typeDefs = gql`
     review: String
     fileUrl: String
     status: String
-    createdAt: String!
-    updatedAt: String!
+    createdAt: Date!
+    updatedAt: Date
   }
 
   type Query {

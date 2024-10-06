@@ -19,7 +19,7 @@ const typeDefs = gql`
     bloodType: String
     imgUrl: String
     timeZone: String
-    completedAppointments: [CompletedAppointment]
+    completedAppointments:[CompletedAppointment]
     upcomingAppointments: [UpcomingAppointment]
     createdAt: String!
     updatedAt: String!

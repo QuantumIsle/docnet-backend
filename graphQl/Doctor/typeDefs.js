@@ -12,7 +12,7 @@ const typeDefs = gql`
     dateOfBirth: Date!
     gender: String!
     email: String!
-    specialization: String!
+    specialization: String
     contactNumber: String!
     videoVisitHours: Int
     about: String!

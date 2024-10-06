@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 const moment = require("moment-timezone");
-
+const UpcomingAppointment = require('./appointments/UpcomingAppointmentModel')
 const Review = require("./review/review"); // Import the Review model
 
 const validTimeZones = moment.tz.names();

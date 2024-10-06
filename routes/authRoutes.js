@@ -12,4 +12,8 @@ router.get("/auth/callback", authController.googleCallback, (req, res) => {
 router.get("/profile", authController.profile);
 router.get("/logout", authController.logout);
 
+router.post("/forget-password", authController.forgetPassword);
+
+router.post("/change-password", authController.changePassword);
+
 module.exports = router;

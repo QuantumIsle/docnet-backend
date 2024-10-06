@@ -167,6 +167,8 @@ PatientSchema.statics.getPatient = async function (identifier) {
       query.googleId = identifier;
     }
 
+    console.log("Query:", query); // Log the constructed query for debugging
+
     let patient;
     try {
       // Find the patient based on the constructed query
@@ -174,28 +176,32 @@ PatientSchema.statics.getPatient = async function (identifier) {
         .populate({
           path: "completedAppointments",
           populate: {
-            path: "docId", // Path to doctor reference in Appointment
+            path: "docId", // Path to doctor reference in CompletedAppointment
+            // Select only necessary fields
           },
         })
         .populate({
           path: "upcomingAppointments",
           populate: {
-            path: "docId", // Path to doctor reference in Appointment
+            path: "docId", // Path to doctor reference in UpcomingAppointment
+            // Select only necessary fields
           },
         });
+
+      // If patient is not found, return an error
+      if (!patient) {
+        throw new Error("Patient not found.");
+      }
+
+      // Handle missing appointments gracefully
+      patient.completedAppointments = patient.completedAppointments || [];
+      patient.upcomingAppointments = patient.upcomingAppointments || [];
+
+      return patient;
     } catch (err) {
-      patient = await this.findOne(query);
+      console.log("Error populating patient:", err);
+      throw new Error("Error retrieving patient data.");
     }
-
-    if (!patient) {
-      throw new Error("Patient not found.");
-    }
-
-    // Handle missing appointments gracefully
-    patient.completedAppointments = patient.completedAppointments || [];
-    patient.upcomingAppointments = patient.upcomingAppointments || [];
-
-    return patient;
   } catch (error) {
     if (error.name === "MongoError") {
       throw new Error("Database error: Unable to retrieve patient data.");

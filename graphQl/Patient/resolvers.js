@@ -10,6 +10,7 @@ const resolvers = {
         console.log(user);
 
         const patient = await Patient.getPatient(user);
+        console.log(patient);
 
         return patient;
       } catch (error) {
@@ -38,8 +39,6 @@ const resolvers = {
   },
   Mutation: {
     updatePatient: async (_, { id, ...updateData }, context) => {
-      console.log(context);
-
       try {
         // Find the patient by ID and update the fields provided in the updateData
         const updatedPatient = await Patient.findByIdAndUpdate(

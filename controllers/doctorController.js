@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Doctor = require("../model/doctorModel");
 const Patient = require("../model/patientModel");
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -212,6 +213,7 @@ exports.authMiddleware = async (req, res) => {
 };
 
 const CompletedAppointment = require("../model/appointments/CompletedAppointmentModel"); // Import the CompletedAppointment model
+const Report = require("../model/reportsModel"); // Import the Report model
 
 exports.addCompletedAppointment = async (req, res) => {
   const { patientId, outcome, appointmentId } = req.body;
@@ -238,7 +240,6 @@ exports.addCompletedAppointment = async (req, res) => {
     // Create and save the completed appointment
     const newAppointment = new CompletedAppointment(appointmentData);
     await newAppointment.save();
-
     await Doctor.addCompletedAppointment(
       docId,
       appointmentId,
@@ -249,6 +250,23 @@ exports.addCompletedAppointment = async (req, res) => {
       appointmentId,
       newAppointment._id
     );
+    // Check if reportRequest is present, if yes, create a report
+    if (outcome.reportRequest) {
+      const reportData = {
+        doctorId: docId,
+        patientId: patientId,
+        appointmentId: newAppointment._id, // Reference to the newly created appointment
+        reportType: outcome.reportRequest, // Assuming this is the type of report requested
+        review: "", // This can be updated later, initially empty
+        fileUrl: "", // File can be added later if needed
+      };
+
+      // Create and save the report
+      const newReport = new Report(reportData);
+      await newReport.save();
+
+      console.log("Report created:", newReport);
+    }
 
     res.status(201).json({
       message: "Completed appointment added successfully",
@@ -257,5 +275,42 @@ exports.addCompletedAppointment = async (req, res) => {
   } catch (error) {
     console.error("Error adding completed appointment:", error);
     res.status(500).json({ message: "Server error", error });
+  }
+};
+
+// API handler for reviewing a report
+exports.reviewReport = async (req, res) => {
+  try {
+    const { reportId, review } = req.body;
+    console.log(req.body);
+
+    // Validate required fields
+    if (!reportId || !review) {
+      return res
+        .status(400)
+        .json({ message: "Report ID and review are required." });
+    }
+
+    // Find the report by ID and update the review and status
+    const report = await Report.findById(reportId);
+
+    if (!report) {
+      return res.status(404).json({ message: "Report not found." });
+    }
+
+    // Update the report with the review and change status to "Reviewed"
+    report.review = review;
+    report.status = "Reviewed";
+
+    // Save the updated report
+    await report.save();
+
+    return res.status(200).json({
+      message: "Review submitted successfully.",
+      report,
+    });
+  } catch (error) {
+    console.error("Error reviewing report:", error);
+    return res.status(500).json({ message: "Internal server error." });
   }
 };
