@@ -7,10 +7,10 @@ const resolvers = {
     getPatientByID: async (_, __, context) => {
       try {
         const user = context.user;
-        console.log(user);
+  
 
         const patient = await Patient.getPatient(user);
-        console.log(patient);
+    
 
         return patient;
       } catch (error) {

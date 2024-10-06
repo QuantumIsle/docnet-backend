@@ -15,7 +15,7 @@ const resolvers = {
     getCompletedAppointmentById: async (_, { id }) => {
       try {
         // Populate doctor and patient fields
-        return await CompletedAppointment.findOne({ _id: id })
+        return await CompletedAppointment.find({ docId: id })
           .populate("docId") // Populate doctor information
           .populate("patientId"); // Populate patient information
       } catch (error) {
@@ -33,8 +33,10 @@ const resolvers = {
     },
     getUpcomingAppointmentById: async (_, { id }) => {
       try {
+        console.log(id);
+
         // Find all upcoming appointments for the given doctor ID and populate related fields
-        const appointments = await UpcomingAppointment.findOne({ _id: id })
+        const appointments = await UpcomingAppointment.find({ docId: id })
           .populate("docId") // Populate doctor information
           .populate("patientId"); // Populate patient information
 

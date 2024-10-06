@@ -144,7 +144,7 @@ PatientSchema.statics.addPatient = async function (patientData) {
 
     return newPatient;
   } catch (error) {
-    console.log(error);
+
 
     throw new Error(error.message);
   }
@@ -167,7 +167,7 @@ PatientSchema.statics.getPatient = async function (identifier) {
       query.googleId = identifier;
     }
 
-    console.log("Query:", query); // Log the constructed query for debugging
+
 
     let patient;
     try {

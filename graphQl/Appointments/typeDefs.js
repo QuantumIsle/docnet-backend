@@ -47,9 +47,9 @@ const typeDefs = gql`
   # Queries for fetching appointments
   type Query {
     getCompletedAppointments: [CompletedAppointment]
-    getCompletedAppointmentById(id: ID!): CompletedAppointment
+    getCompletedAppointmentById(id: ID!): [CompletedAppointment]
     getUpcomingAppointments: [UpcomingAppointment]
-    getUpcomingAppointmentById(id: ID!): UpcomingAppointment
+    getUpcomingAppointmentById(id: ID!): [UpcomingAppointment]
   }
 `;
 

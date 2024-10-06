@@ -127,7 +127,6 @@ app.get("/signature", async (req, res) => {
       algorithm: "HS256",
       header: oHeader,
     });
-  
 
     res.send(sdkJWT);
   } catch (error) {

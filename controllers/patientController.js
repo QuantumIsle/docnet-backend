@@ -6,7 +6,7 @@ const dayjs = require("dayjs");
 const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 const mongoose = require("mongoose");
-
+const { sendEmail } = require("./emailController");
 // Registers a new patient
 exports.register = async (req, res) => {
   const {
@@ -18,7 +18,7 @@ exports.register = async (req, res) => {
     password,
     timeZone,
   } = req.body;
-  console.log(req.body);
+
 
   try {
     // Create a new patient using the Patient model
@@ -216,54 +216,112 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const Doctor = require("../model/doctorModel");
 
+
 exports.booking = async (req, res) => {
-  const { docId, date, time } = req.body; // Extract docId, date, and time from the request body
-  const user = req.user; // Get the authenticated user (assuming user is authenticated and available in req.user)
+  const { docId, date, time } = req.body;
+  const user = req.user;
 
   try {
-    // Check if the doctor ID, date, and time are provided
+    // Validate inputs
     if (!docId || !date || !time) {
       return res
         .status(400)
         .json({ error: "All fields (docId, date, time) are required." });
     }
 
-    // Parse the date and time into a single Date object in the desired time zone
+    // Fetch doctor and patient data
+    const doctorData = await Doctor.findById(docId);
+    const patientData = await Patient.findById(user);
+
+    if (!doctorData || !patientData) {
+      return res.status(404).json({ error: "Doctor or Patient not found." });
+    }
+
+    // Use the doctor's timezone to convert the appointment time
     const appointmentDate = dayjs.tz(
       `${date} ${time}`,
       "YYYY-MM-DD HH:mm",
       "UTC"
     );
 
-    // Check if the appointment date is valid and not in the past
+    // Check if the appointment is valid and not in the past
     if (!appointmentDate.isValid() || appointmentDate.isBefore(dayjs())) {
       return res
         .status(400)
         .json({ error: "Invalid appointment date or time." });
     }
 
-    // Create the new appointment object
+    // Convert the appointment time to the doctor's timezone
+    const doctorTimezone = doctorData.timezone || "UTC"; // Default to UTC if timezone is not set
+    const appointmentInDoctorTimezone = appointmentDate.tz(doctorTimezone);
+
+    // Create the appointment
     const newAppointment = new UpcomingAppointment({
-      docId: new mongoose.Types.ObjectId(docId), // Use `new` to instantiate ObjectId
-      patientId: new mongoose.Types.ObjectId(user), // Use `new` for ObjectId here too
-      date: appointmentDate.toDate(), // Convert back to JavaScript Date object for storage
+      docId: new mongoose.Types.ObjectId(docId),
+      patientId: new mongoose.Types.ObjectId(user),
+      date: appointmentDate.toDate(),
     });
 
     // Save the appointment to the database
     const savedAppointment = await newAppointment.save();
 
+    // Add the appointment references in the doctor and patient models
     await Patient.addUpcomingAppointment(user, savedAppointment._id);
-    await Doctor.addUpcomingAppointment(docId, savedAppointment.id);
-    // Return a success response with the saved appointment details
+    await Doctor.addUpcomingAppointment(docId, savedAppointment._id);
+
+    // Send confirmation emails to both patient and doctor
+    const patientEmailContent = `
+      Dear ${patientData.firstName},
+
+      Your appointment with Dr. ${doctorData.firstName} ${
+      doctorData.lastName
+    } has been successfully booked.
+      Appointment Details:
+      - Date: ${appointmentDate.format("YYYY-MM-DD")}
+      - Time: ${appointmentDate.format("HH:mm")} (UTC)
+
+      Thank you for choosing our service.
+      Best regards,
+      The DocnetAI Support Team
+    `;
+
+    const doctorEmailContent = `
+      Dear Dr. ${doctorData.firstName} ${doctorData.lastName},
+
+      You have a new appointment with ${patientData.firstName} ${
+      patientData.lastName
+    }.
+      Appointment Details:
+      - Date: ${appointmentInDoctorTimezone.format("YYYY-MM-DD")}
+      - Time: ${appointmentInDoctorTimezone.format("HH:mm")} (${doctorTimezone})
+
+      Please ensure to be available at the scheduled time.
+      Best regards,
+      The DocnetAI Support Team
+    `;
+
+    // Send the emails
+    await sendEmail(
+      patientData.email,
+      "Appointment Confirmation",
+      patientEmailContent
+    );
+    await sendEmail(
+      doctorData.email,
+      "New Appointment Confirmation",
+      doctorEmailContent
+    );
+
+    // Return success response
     return res.status(201).json({
       message: "Appointment booked successfully",
       appointment: savedAppointment,
     });
   } catch (error) {
     console.error("Error booking appointment:", error);
-    return res
-      .status(500)
-      .json({ error: "An error occurred while booking the appointment" });
+    return res.status(500).json({
+      error: "An error occurred while booking the appointment",
+    });
   }
 };
 
@@ -434,8 +492,6 @@ exports.addReview = async (req, res) => {
   const { doctor, rating, comment } = req.body;
   const user = req.user;
 
-  console.log(req.body);
-  console.log(user);
   try {
     // Check if all necessary fields are provided
     if (!doctor || !user || !rating || !comment) {
