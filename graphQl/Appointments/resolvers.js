@@ -15,7 +15,7 @@ const resolvers = {
     getCompletedAppointmentById: async (_, { id }) => {
       try {
         // Populate doctor and patient fields
-        return await CompletedAppointment.find({ docId: id })
+        return await CompletedAppointment.find({ _id: id })
           .populate("docId") // Populate doctor information
           .populate("patientId"); // Populate patient information
       } catch (error) {
@@ -35,10 +35,22 @@ const resolvers = {
       try {
         console.log(id);
 
-        // Find all upcoming appointments for the given doctor ID and populate related fields
-        const appointments = await UpcomingAppointment.find({ docId: id })
-          .populate("docId") // Populate doctor information
-          .populate("patientId"); // Populate patient information
+        // Check if the provided ID is for an appointment or a doctor
+        let appointments;
+
+        // If the ID is an appointment ID
+        if (await UpcomingAppointment.exists({ _id: id })) {
+          // Find appointment by appointment ID
+          console.log("valid id ");
+          appointments = await UpcomingAppointment.find({ _id: id })
+            .populate("docId") // Populate doctor information
+            .populate("patientId"); // Populate patient information
+        } else {
+          // Otherwise, assume it's a doctor ID and find appointments for the doctor
+          appointments = await UpcomingAppointment.find({ docId: id })
+            .populate("docId") // Populate doctor information
+            .populate("patientId"); // Populate patient information
+        }
 
         console.log(appointments);
 

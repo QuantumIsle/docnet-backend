@@ -216,7 +216,6 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 const Doctor = require("../model/doctorModel");
 
-
 exports.booking = async (req, res) => {
   const { docId, date, time } = req.body;
   const user = req.user;
