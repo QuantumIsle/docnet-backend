@@ -24,7 +24,6 @@ const DoctorTypeDefs = require("./graphQl/Doctor/typeDefs");
 const DoctorResolvers = require("./graphQl/Doctor/resolvers");
 
 const AppointmentTypeDefs = require("./graphQl/Appointments/typeDefs");
-const AppointmentResolvers = require("./graphQl/Appointments/resolvers");
 
 const ReportTypeDefs = require("./graphQl/Reports/typeDefs");
 const ReportResolvers = require("./graphQl/Reports/resolvers");
@@ -143,12 +142,7 @@ const server = new ApolloServer({
     AppointmentTypeDefs,
     ReportTypeDefs,
   ],
-  resolvers: [
-    patientResolvers,
-    DoctorResolvers,
-    AppointmentResolvers,
-    ReportResolvers,
-  ],
+  resolvers: [patientResolvers, DoctorResolvers, ReportResolvers],
   context: ({ req }) => {
     return { user: req.user };
   },

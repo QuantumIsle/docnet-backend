@@ -19,15 +19,13 @@ const typeDefs = gql`
     bloodType: String
     imgUrl: String
     timeZone: String
-    completedAppointments:[CompletedAppointment]
-    upcomingAppointments: [UpcomingAppointment]
+    appointments: [Appointment]
     createdAt: String!
     updatedAt: String!
   }
 
   type Query {
     getPatientByID: Patient
-    getPatientByGoogleId(googleId: String!): Patient
     getAllPatients: [Patient!]
   }
 

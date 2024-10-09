@@ -3,15 +3,38 @@ const Doctor = require("../../model/doctorModel");
 const resolvers = {
   Query: {
     getAllDoctors: async () => {
-      const data = await Doctor.getAllDoctors();
+      const data = await Doctor.find()
+        .populate({
+          path: "reviews",
+          populate: {
+            path: "patientId",
+            select: "firstName lastName imgUrl", // Populate user details in reviews
+          },
+        })
+        .populate({
+          path: "appointments",
+          populate: {
+            path: "patientId",
+          },
+        });
       return data;
     },
-    getDoctorById: async (_, { id }, context) => {
-      if (id) {
-        const data = await Doctor.getDoctorByID(id);
-        return data;
-      }
-      return await Doctor.getDoctorByID(context.user);
+    getDoctorById: async (_, __, context) => {
+      const data = await Doctor.findOne({ _id: context.user })
+        .populate({
+          path: "reviews",
+          populate: {
+            path: "patientId",
+            select: "firstName lastName imgUrl", // Populate user details in reviews
+          },
+        })
+        .populate({
+          path: "appointments",
+          populate: {
+            path: "patientId",
+          },
+        });
+      return data;
     },
   },
 

@@ -4,15 +4,20 @@ const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
   scalar Date
-  # Type for CompletedAppointment, extending the base Appointment
-  type CompletedAppointment {
-    id: ID
-    docId: Doctor # Reference to the Doctor type
-    patientId: Patient # Reference to the Patient type
+
+  # Type for Appointment, extending the base Appointment
+  type Appointment {
+    id: ID!
+    doctorId: Doctor! # Reference to the Doctor type
+    patientId: Patient! # Reference to the Patient type
+    appointmentNumber: String!
+    status: String!
     date: Date # Timestamp of the appointment
     reason: String # Reason for the appointment (optional)
     notes: String # General notes (optional)
     outcome: Outcome # Outcome details, including diagnosis and reports
+    appointmentDate: Date!
+    completedAt: Date
     createdAt: Date # Timestamp of when the appointment was created
     updatedAt: Date # Timestamp of when the appointment was last updated
   }
@@ -24,32 +29,9 @@ const typeDefs = gql`
 
   type Outcome {
     diagnosis: String! # The diagnosis from the appointment
-    prescription:[Prescription]!
+    prescription: [Prescription]!
     notes: String # Additional notes related to the outcome (optional)
     reportRequest: [Report] # List of report requests related to the outcome
-  }
-
-  # Type for UpcomingAppointment, extending the base Appointment
-  type UpcomingAppointment {
-    id: ID!
-    docId: Doctor!
-    patientId: Patient!
-    date: Date!
-    reason: String
-    notes: String
-    prescription: [String]
-    appointmentType: String!
-    reminderSent: Boolean!
-    createdAt: Date!
-    updatedAt: Date!
-  }
-
-  # Queries for fetching appointments
-  type Query {
-    getCompletedAppointments: [CompletedAppointment]
-    getCompletedAppointmentById(id: ID!): [CompletedAppointment]
-    getUpcomingAppointments: [UpcomingAppointment]
-    getUpcomingAppointmentById(id: ID!): [UpcomingAppointment]
   }
 `;
 

@@ -16,7 +16,7 @@ const ReportSchema = new Schema(
     },
     appointmentId: {
       type: Schema.Types.ObjectId,
-      ref: "CompletedAppointment", // Reference to the completed appointment
+      ref: "Appointment", // Reference to the completed appointment
       required: false,
     },
     reportType: {

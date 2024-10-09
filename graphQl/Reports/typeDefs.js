@@ -6,7 +6,7 @@ const typeDefs = gql`
     id: ID!
     doctorId: Doctor!
     patientId: Patient!
-    appointmentId: CompletedAppointment
+    appointmentId: Appointment
     reportType: String
     review: String
     fileUrl: String

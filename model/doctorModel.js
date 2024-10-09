@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const Schema = mongoose.Schema;
 const moment = require("moment-timezone");
-const UpcomingAppointment = require('./appointments/UpcomingAppointmentModel')
-const Review = require("./review/review"); // Import the Review model
+const Review = require("./review"); // Import the Review model
 
 const validTimeZones = moment.tz.names();
 // Define the schema for doctor accounts
@@ -27,7 +26,7 @@ const DoctorSchema = new Schema(
     },
     gender: {
       type: String,
-      enum: ["male", "female","other"],
+      enum: ["male", "female", "other"],
       required: true,
     },
     email: {
@@ -39,6 +38,7 @@ const DoctorSchema = new Schema(
       type: String,
       required: true,
     },
+    verified: { type: Boolean, required: true, default: false },
     specialization: {
       type: String,
       required: false,
@@ -83,17 +83,10 @@ const DoctorSchema = new Schema(
     languagesSpoken: {
       type: String,
     },
-    completedAppointments: [
+    appointments: [
       {
         type: Schema.Types.ObjectId,
-        ref: "CompletedAppointment",
-        unique: false,
-      },
-    ],
-    upcomingAppointments: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "UpcomingAppointment",
+        ref: "Appointment",
         unique: false,
       },
     ],
@@ -170,23 +163,15 @@ DoctorSchema.statics.getDoctorByID = async function (id) {
         },
       })
       .populate({
-        path: "completedAppointments",
+        path: "appointments",
         populate: {
           path: "patientId",
-          select: "firstName lastName", // Populate user details in reviews
-        },
-      })
-      .populate({
-        path: "upcomingAppointments",
-        populate: {
-          path: "patientId",
-          select: "firstName lastName", // Populate user details in reviews
         },
       });
+
     if (!doctor) {
       throw new Error("Doctor not found.");
     }
-    
 
     return doctor;
   } catch (error) {
@@ -209,65 +194,7 @@ DoctorSchema.methods.updateRating = async function () {
     throw error;
   }
 };
-DoctorSchema.statics.addCompletedAppointment = async function (
-  docId,
-  upcomingAppointmentId,
-  completedAppointmentId
-) {
-  try {
-    // Find the docotor by ID
-    const docotor = await this.findById(docId);
 
-    if (!docotor) {
-      throw new Error("docotor not found.");
-    }
-
-    // Remove the upcoming appointment from the docotor's upcomingAppointments array
-    const updatedUpcomingAppointments = docotor.upcomingAppointments.filter(
-      (appointment) => !appointment.equals(upcomingAppointmentId)
-    );
-    docotor.upcomingAppointments = updatedUpcomingAppointments;
-
-    // Remove the upcoming appointment document from the UpcomingAppointment collection
-    await UpcomingAppointment.findByIdAndDelete(upcomingAppointmentId);
-
-    // Add the completed appointment to the completedAppointments array
-    docotor.completedAppointments.push(completedAppointmentId);
-
-    // Save the updated docotor document
-    await docotor.save();
-
-    return docotor;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-DoctorSchema.statics.addUpcomingAppointment = async function (
-  docId,
-  appointmentId
-) {
-  try {
-    // Find the docotor by ID
-    const doctor = await this.findOne({ _id: docId });
- 
-
-    if (!doctor) {
-      throw new Error("Doctor not found.");
-    }
-
-    // Add the appointment to the upcomingAppointments array
-    doctor.upcomingAppointments.push(appointmentId);
-
-    // Save the updated docotor document
-    await doctor.save();
-
-
-    return doctor;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
 const Doctor = mongoose.model("Doctor", DoctorSchema);
 
 module.exports = Doctor;

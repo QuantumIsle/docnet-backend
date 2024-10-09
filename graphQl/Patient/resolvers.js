@@ -7,22 +7,9 @@ const resolvers = {
     getPatientByID: async (_, __, context) => {
       try {
         const user = context.user;
-  
 
         const patient = await Patient.getPatient(user);
-    
 
-        return patient;
-      } catch (error) {
-        throw new Error(error.message);
-      }
-    },
-    getPatientByGoogleId: async (_, { googleId }) => {
-      try {
-        const patient = await Patient.getPatient(googleId);
-        if (!patient) {
-          throw new Error("Patient not found.");
-        }
         return patient;
       } catch (error) {
         throw new Error(error.message);
@@ -30,7 +17,19 @@ const resolvers = {
     },
     getAllPatients: async () => {
       try {
-        const patients = await Patient.getPatients();
+        const patients = await Patient.find({})
+          .populate({
+            path: "appointments",
+            populate: {
+              path: "doctorId", // Path to doctor reference in Appointment
+            },
+          })
+          .populate({
+            path: "reviews",
+            populate: {
+              path: "doctorId",
+            },
+          });
         return patients;
       } catch (error) {
         throw new Error(error.message);

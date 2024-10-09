@@ -16,8 +16,6 @@ router.post(
   patientController.uploadMiddleware,
   patientController.reportUpload
 );
-//patient booking routes
-router.post("/booking", auth, patientController.booking);
 
 router.post("/addReview", auth, patientController.addReview);
 

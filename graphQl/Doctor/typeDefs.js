@@ -23,8 +23,7 @@ const typeDefs = gql`
     professionStartedYear: Int
     languagesSpoken: String
     workingHours: WorkingHours!
-    completedAppointments: [CompletedAppointment]
-    upcomingAppointments: [UpcomingAppointment]
+    appointments: [Appointment]
     reviews: [Review]
     createdAt: Date!
     updatedAt: Date!
@@ -38,9 +37,8 @@ const typeDefs = gql`
 
   # Review Type Definition
   type Review {
-    id: ID
-    user: Patient
-    doctor: Doctor
+    id: ID!
+    patientId: Patient!
     rating: Float!
     comment: String!
     createdAt: Date!
@@ -79,7 +77,7 @@ const typeDefs = gql`
   # Query Type Definition
   type Query {
     getAllDoctors: [Doctor!]!
-    getDoctorById(id: ID): Doctor
+    getDoctorById: Doctor
   }
 `;
 

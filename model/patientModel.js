@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 
 const moment = require("moment-timezone");
 
-const UpcomingAppointment = require("./appointments/UpcomingAppointmentModel");
 
 const validTimeZones = moment.tz.names();
 
@@ -29,7 +28,7 @@ const PatientSchema = new Schema(
     },
     gender: {
       type: String,
-      enum: ["male", "female","other"],
+      enum: ["male", "female", "other"],
       required: true,
     },
     languagesSpoken: [
@@ -92,17 +91,17 @@ const PatientSchema = new Schema(
         unique: false,
       },
     ],
-    completedAppointments: [
+    appointments: [
       {
         type: Schema.Types.ObjectId,
-        ref: "CompletedAppointment",
+        ref: "Appointment",
         unique: false,
       },
     ],
-    upcomingAppointments: [
+    reviews: [
       {
         type: Schema.Types.ObjectId,
-        ref: "UpcomingAppointment",
+        ref: "Review",
         unique: false,
       },
     ],
@@ -144,159 +143,10 @@ PatientSchema.statics.addPatient = async function (patientData) {
 
     return newPatient;
   } catch (error) {
-
-
     throw new Error(error.message);
   }
 };
 
-// Flexible method to get patient data by ID, Google ID, or email
-PatientSchema.statics.getPatient = async function (identifier) {
-  try {
-    // Check if identifier is an ObjectId, GoogleId, or email
-    const query = {};
-
-    if (mongoose.Types.ObjectId.isValid(identifier)) {
-      // If it's a valid ObjectId, search by _id (patient ID)
-      query._id = identifier;
-    } else if (identifier.includes("@")) {
-      // If it contains '@', treat it as an email
-      query.email = identifier;
-    } else {
-      // Otherwise, treat it as a Google ID
-      query.googleId = identifier;
-    }
-
-
-
-    let patient;
-    try {
-      // Find the patient based on the constructed query
-      patient = await this.findOne(query)
-        .populate({
-          path: "completedAppointments",
-          populate: {
-            path: "docId", // Path to doctor reference in CompletedAppointment
-            // Select only necessary fields
-          },
-        })
-        .populate({
-          path: "upcomingAppointments",
-          populate: {
-            path: "docId", // Path to doctor reference in UpcomingAppointment
-            // Select only necessary fields
-          },
-        });
-
-      // If patient is not found, return an error
-      if (!patient) {
-        throw new Error("Patient not found.");
-      }
-
-      // Handle missing appointments gracefully
-      patient.completedAppointments = patient.completedAppointments || [];
-      patient.upcomingAppointments = patient.upcomingAppointments || [];
-
-      return patient;
-    } catch (err) {
-      console.log("Error populating patient:", err);
-      throw new Error("Error retrieving patient data.");
-    }
-  } catch (error) {
-    if (error.name === "MongoError") {
-      throw new Error("Database error: Unable to retrieve patient data.");
-    }
-    throw error;
-  }
-};
-
-PatientSchema.statics.getPatients = async function () {
-  try {
-    let patients = await this.find()
-      .populate({
-        path: "completedAppointments",
-        populate: {
-          path: "docId", // Path to doctor reference in Appointment
-        },
-      })
-      .populate({
-        path: "upcomingAppointments",
-        populate: {
-          path: "docId", // Path to doctor reference in Appointment
-        },
-      });
-
-    if (!patients) {
-      throw new Error("Patients not found.");
-    }
-
-    return patients;
-  } catch (error) {
-    if (error.name === "MongoError") {
-      throw new Error("Database error: Unable to retrieve patient data.");
-    }
-    throw error;
-  }
-};
-
-// Method to add upcoming appointment
-PatientSchema.statics.addUpcomingAppointment = async function (
-  patientId,
-  appointmentId
-) {
-  try {
-    // Find the patient by ID
-    const patient = await this.findById(patientId);
-
-    if (!patient) {
-      throw new Error("Patient not found.");
-    }
-
-    // Add the appointment to the upcomingAppointments array
-    patient.upcomingAppointments.push(appointmentId);
-
-    // Save the updated patient document
-    await patient.save();
-
-    return patient;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
-
-PatientSchema.statics.addCompletedAppointment = async function (
-  patientId,
-  upcomingAppointmentId,
-  completedAppointmentId
-) {
-  try {
-    // Find the patient by ID
-    const patient = await this.findById(patientId);
-
-    if (!patient) {
-      throw new Error("Patient not found.");
-    }
-
-    // Remove the upcoming appointment from the patient's upcomingAppointments array
-    const updatedUpcomingAppointments = patient.upcomingAppointments.filter(
-      (appointment) => !appointment.equals(upcomingAppointmentId)
-    );
-    patient.upcomingAppointments = updatedUpcomingAppointments;
-
-    // Remove the upcoming appointment document from the UpcomingAppointment collection
-    await UpcomingAppointment.findByIdAndDelete(upcomingAppointmentId);
-
-    // Add the completed appointment to the completedAppointments array
-    patient.completedAppointments.push(completedAppointmentId);
-
-    // Save the updated patient document
-    await patient.save();
-
-    return patient;
-  } catch (error) {
-    throw new Error(error.message);
-  }
-};
 
 const Patient = mongoose.model("Patient", PatientSchema);
 

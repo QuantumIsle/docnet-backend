@@ -24,7 +24,6 @@ const DoctorTypeDefs = require("./graphQl/Doctor/typeDefs");
 const DoctorResolvers = require("./graphQl/Doctor/resolvers");
 
 const AppointmentTypeDefs = require("./graphQl/Appointments/typeDefs");
-const AppointmentResolvers = require("./graphQl/Appointments/resolvers");
 
 const ReportTypeDefs = require("./graphQl/Reports/typeDefs");
 const ReportResolvers = require("./graphQl/Reports/resolvers");
@@ -37,7 +36,7 @@ const SDK_KEY = process.env.SDK_KEY;
 const SDK_SECRET = process.env.SDK_SECRET;
 
 const corsOptions = {
-  //origin: "http://localhost:5173", // React frontend's URL
+  origin: process.env.FRONTEND_URL, // React frontend's URL
   credentials: true, // Allow cookies (credentials) to be sent and received
 };
 
@@ -53,7 +52,7 @@ app.use(express.urlencoded({ extended: false }));
 // Session configuration
 app.use(
   session({
-    secret: process.env.SESSION_SECRET ,
+    secret: process.env.SESSION_SECRET || "your_secret_key",
     resave: false,
     saveUninitialized: true,
   })
@@ -71,13 +70,13 @@ app.use("/appointments", require("./routes/appointmentRoutes"));
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
 
-// app.use(auth);
+app.use(auth);
 
 const Doctor = require("./model/doctorModel");
 const Patient = require("./model/patientModel");
+
 app.get("/signature", async (req, res) => {
-  // console.log(req.user); 
-  console.log(req.query);
+  const { id } = req.query; // Get the appointmentId from query parameters
 
   try {
     // Get the user ID from req.user (populated by your auth middleware)
@@ -92,7 +91,7 @@ app.get("/signature", async (req, res) => {
     const doctor = await Doctor.findById(userId);
     if (doctor) {
       isDoctor = true;
-      role_type = 2; // Role type for host (doctor)
+      role_type = 0; // Role type for host (doctor)
     }
 
     // If not a doctor, check if the user is a patient
@@ -115,7 +114,7 @@ app.get("/signature", async (req, res) => {
     const oHeader = { alg: "HS256", typ: "JWT" };
     const oPayload = {
       app_key: SDK_KEY,
-      tpc: "test", // Meeting topic or identifier
+      tpc: id, // Use the appointmentId as the unique meeting identifier
       role_type: role_type, // Host (doctor) or participant (patient)
       version: 1,
       iat: iat,
@@ -128,7 +127,6 @@ app.get("/signature", async (req, res) => {
       header: oHeader,
     });
 
-    // Send the JWT back
     res.send(sdkJWT);
   } catch (error) {
     console.log("Error in /signature route:", error);
@@ -144,12 +142,7 @@ const server = new ApolloServer({
     AppointmentTypeDefs,
     ReportTypeDefs,
   ],
-  resolvers: [
-    patientResolvers,
-    DoctorResolvers,
-    AppointmentResolvers,
-    ReportResolvers,
-  ],
+  resolvers: [patientResolvers, DoctorResolvers, ReportResolvers],
   context: ({ req }) => {
     return { user: req.user };
   },
@@ -163,11 +156,11 @@ server.start().then(() => {
     .then(() => {
       console.log("Connected to MongoDB");
 
-      app.listen({ port: 3000 }, () => {
+      app.listen({ port: 4000 }, () => {
         console.log(
-          "Server running on http://localhost:3000" + server.graphqlPath
+          "Server running on http://localhost:4000" + server.graphqlPath
         );
-        console.log("REST API running on http://localhost:3000/");
+        console.log("REST API running on http://localhost:4000/");
       });
     })
     .catch((err) => {
