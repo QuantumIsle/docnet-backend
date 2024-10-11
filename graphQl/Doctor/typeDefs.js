@@ -25,6 +25,7 @@ const typeDefs = gql`
     workingHours: WorkingHours!
     appointments: [Appointment]
     reviews: [Review]
+    reports: [Report]
     createdAt: Date!
     updatedAt: Date!
   }
@@ -77,7 +78,8 @@ const typeDefs = gql`
   # Query Type Definition
   type Query {
     getAllDoctors: [Doctor!]!
-    getDoctorById: Doctor
+    getDoctor: Doctor
+    getDoctorById(id: ID!): Doctor
   }
 `;
 

@@ -16,8 +16,7 @@ const AppointmentSchema = new Schema(
     },
     appointmentNumber: {
       type: String,
-      unique: true, // Ensure the appointment number is unique
-      required: true,
+      unique: true, 
     },
     status: {
       type: String,

@@ -15,11 +15,6 @@ const typeDefs = gql`
     updatedAt: Date
   }
 
-  type Query {
-    getReportsByDoctorId: [Report]
-    getReportsByPatientId: [Report]
-    getReportById(id: ID!): Report
-  }
 `;
 
 module.exports = typeDefs;

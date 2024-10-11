@@ -12,7 +12,6 @@ const typeDefs = gql`
     patientId: Patient! # Reference to the Patient type
     appointmentNumber: String!
     status: String!
-    date: Date # Timestamp of the appointment
     reason: String # Reason for the appointment (optional)
     notes: String # General notes (optional)
     outcome: Outcome # Outcome details, including diagnosis and reports

@@ -26,7 +26,6 @@ const DoctorResolvers = require("./graphQl/Doctor/resolvers");
 const AppointmentTypeDefs = require("./graphQl/Appointments/typeDefs");
 
 const ReportTypeDefs = require("./graphQl/Reports/typeDefs");
-const ReportResolvers = require("./graphQl/Reports/resolvers");
 
 const app = express();
 
@@ -77,6 +76,7 @@ const Patient = require("./model/patientModel");
 
 app.get("/signature", async (req, res) => {
   const { id } = req.query; // Get the appointmentId from query parameters
+  console.log(id);
 
   try {
     // Get the user ID from req.user (populated by your auth middleware)
@@ -142,7 +142,7 @@ const server = new ApolloServer({
     AppointmentTypeDefs,
     ReportTypeDefs,
   ],
-  resolvers: [patientResolvers, DoctorResolvers, ReportResolvers],
+  resolvers: [patientResolvers, DoctorResolvers],
   context: ({ req }) => {
     return { user: req.user };
   },

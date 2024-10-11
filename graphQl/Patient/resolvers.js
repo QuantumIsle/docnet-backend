@@ -4,12 +4,55 @@ const Patient = require("../../model/patientModel"); // Import the Patient model
 
 const resolvers = {
   Query: {
-    getPatientByID: async (_, __, context) => {
+    getPatient: async (_, __, context) => {
       try {
         const user = context.user;
+        const patient = await Patient.findOne({ _id: user })
+          .populate({
+            path: "appointments",
+            populate: {
+              path: "doctorId", // Path to doctor reference in Appointment
+            },
+          })
+          .populate({
+            path: "reviews",
+            populate: {
+              path: "doctorId",
+            },
+          })
+          .populate({
+            path: "reports",
+            populate: {
+              path: "doctorId",
+            },
+          });
 
-        const patient = await Patient.getPatient(user);
-
+        return patient;
+      } catch (error) {
+        throw new Error(error.message);
+      }
+    },
+    getPatientById: async (_, { id }, __) => {
+      try {
+        const patient = await Patient.findOne({ _id: id })
+          .populate({
+            path: "appointments",
+            populate: {
+              path: "doctorId", // Path to doctor reference in Appointment
+            },
+          })
+          .populate({
+            path: "reviews",
+            populate: {
+              path: "doctorId",
+            },
+          })
+          .populate({
+            path: "reports",
+            populate: {
+              path: "doctorId",
+            },
+          });
         return patient;
       } catch (error) {
         throw new Error(error.message);
@@ -26,6 +69,12 @@ const resolvers = {
           })
           .populate({
             path: "reviews",
+            populate: {
+              path: "doctorId",
+            },
+          })
+          .populate({
+            path: "reports",
             populate: {
               path: "doctorId",
             },

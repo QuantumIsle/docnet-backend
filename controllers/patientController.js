@@ -13,7 +13,6 @@ exports.register = async (req, res) => {
     timeZone,
   } = req.body;
 
-
   try {
     // Create a new patient using the Patient model
     const patient = await Patient.addPatient({
@@ -46,14 +45,14 @@ exports.register = async (req, res) => {
     res.cookie("access_token", accessToken, {
       httpOnly: true,
       secure: true, // Use secure cookies in production
-      sameSite: "None",
+      sameSite: "Strict",
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
     });
 
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: true, // Use secure cookies in production
-      sameSite: "None",
+      sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     // Return the tokens and a success message
@@ -108,14 +107,14 @@ exports.login = async (req, res) => {
     res.cookie("access_token", accessToken, {
       httpOnly: true,
       secure: true, // Use secure cookies in production
-      sameSite: "None",
+      sameSite: "Strict",
       maxAge: 2 * 60 * 60 * 1000, // 2 hours
     });
 
     res.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: true, // Use secure cookies in production
-      sameSite: "None",
+      sameSite: "Strict",
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     });
     res.status(200).json({ message: "Logged in" });
@@ -128,6 +127,7 @@ exports.login = async (req, res) => {
 exports.authMiddleware = async (req, res) => {
   const accessToken = req.cookies.access_token;
   const refreshToken = req.cookies.refresh_token;
+
 
   // Check if access token exists and is valid
   if (accessToken) {

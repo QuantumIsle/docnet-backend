@@ -2,24 +2,7 @@ const Doctor = require("../../model/doctorModel");
 
 const resolvers = {
   Query: {
-    getAllDoctors: async () => {
-      const data = await Doctor.find()
-        .populate({
-          path: "reviews",
-          populate: {
-            path: "patientId",
-            select: "firstName lastName imgUrl", // Populate user details in reviews
-          },
-        })
-        .populate({
-          path: "appointments",
-          populate: {
-            path: "patientId",
-          },
-        });
-      return data;
-    },
-    getDoctorById: async (_, __, context) => {
+    getDoctor: async (_, __, context) => {
       const data = await Doctor.findOne({ _id: context.user })
         .populate({
           path: "reviews",
@@ -33,7 +16,56 @@ const resolvers = {
           populate: {
             path: "patientId",
           },
+        })
+        .populate({
+          path: "reports",
+          populate: {
+            path: "patientId",
+          },
         });
+      return data;
+    },
+    getDoctorById: async (_, { id }, __) => {
+      const data = await Doctor.findOne({ _id: id })
+        .populate({
+          path: "reviews",
+          populate: {
+            path: "patientId",
+            select: "firstName lastName imgUrl", // Populate user details in reviews
+          },
+        })
+        .populate({
+          path: "appointments",
+          populate: {
+            path: "patientId",
+          },
+        })
+        .populate({
+          path: "reports",
+          populate: {
+            path: "patientId",
+          },
+        });
+      console.log(data);
+
+      return data;
+    },
+    getAllDoctors: async () => {
+      let data = await Doctor.find()
+        .populate({
+          path: "reviews",
+          populate: {
+            path: "patientId",
+            select: "firstName lastName imgUrl", // Populate user details in reviews
+          },
+        })
+        .populate({
+          path: "appointments",
+          populate: {
+            path: "patientId",
+          },
+        });
+      data = data.filter((doctor) => !doctor.verified);
       return data;
     },
   },

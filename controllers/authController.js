@@ -98,12 +98,12 @@ exports.logout = (req, res, next) => {
     res.clearCookie("access_token", {
       httpOnly: true,
       secure: true, // Use in production
-      sameSite: "None",
+      sameSite: "Strict",
     });
     res.clearCookie("refresh_token", {
       httpOnly: true,
       secure: true, // Use in production
-      sameSite: "None",
+      sameSite: "Strict",
     });
 
     // Send successful response or redirect to login/home

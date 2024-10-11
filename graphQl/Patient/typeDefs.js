@@ -2,7 +2,7 @@ const { gql } = require("apollo-server-express");
 
 const typeDefs = gql`
   scalar Date
-  
+
   type Patient {
     id: ID!
     firstName: String!
@@ -20,12 +20,14 @@ const typeDefs = gql`
     imgUrl: String
     timeZone: String
     appointments: [Appointment]
+    reports: [Report]
     createdAt: String!
     updatedAt: String!
   }
 
   type Query {
-    getPatientByID: Patient
+    getPatient: Patient
+    getPatientById(id: ID!): Patient
     getAllPatients: [Patient!]
   }
 

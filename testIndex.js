@@ -26,7 +26,7 @@ const DoctorResolvers = require("./graphQl/Doctor/resolvers");
 const AppointmentTypeDefs = require("./graphQl/Appointments/typeDefs");
 
 const ReportTypeDefs = require("./graphQl/Reports/typeDefs");
-const ReportResolvers = require("./graphQl/Reports/resolvers");
+
 
 const app = express();
 
@@ -36,7 +36,7 @@ const SDK_KEY = process.env.SDK_KEY;
 const SDK_SECRET = process.env.SDK_SECRET;
 
 const corsOptions = {
-  origin: process.env.FRONTEND_URL, // React frontend's URL
+ // origin: process.env.FRONTEND_URL, // React frontend's URL
   credentials: true, // Allow cookies (credentials) to be sent and received
 };
 
@@ -70,7 +70,7 @@ app.use("/appointments", require("./routes/appointmentRoutes"));
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
 
-app.use(auth);
+// app.use(auth);
 
 const Doctor = require("./model/doctorModel");
 const Patient = require("./model/patientModel");
@@ -142,7 +142,7 @@ const server = new ApolloServer({
     AppointmentTypeDefs,
     ReportTypeDefs,
   ],
-  resolvers: [patientResolvers, DoctorResolvers, ReportResolvers],
+  resolvers: [patientResolvers, DoctorResolvers],
   context: ({ req }) => {
     return { user: req.user };
   },
@@ -156,11 +156,11 @@ server.start().then(() => {
     .then(() => {
       console.log("Connected to MongoDB");
 
-      app.listen({ port: 4000 }, () => {
+      app.listen({ port: 3000 }, () => {
         console.log(
-          "Server running on http://localhost:4000" + server.graphqlPath
+          "Server running on http://localhost:3000" + server.graphqlPath
         );
-        console.log("REST API running on http://localhost:4000/");
+        console.log("REST API running on http://localhost:3000/");
       });
     })
     .catch((err) => {

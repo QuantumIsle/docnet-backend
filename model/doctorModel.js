@@ -83,6 +83,13 @@ const DoctorSchema = new Schema(
     languagesSpoken: {
       type: String,
     },
+    reports: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "Report",
+        unique: false,
+      },
+    ],
     appointments: [
       {
         type: Schema.Types.ObjectId,

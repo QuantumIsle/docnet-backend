@@ -2,16 +2,23 @@ const Appointment = require("../model/appointments");
 const Doctor = require("../model/doctorModel");
 const Patient = require("../model/patientModel");
 const dayjs = require("dayjs");
+const utc = require("dayjs/plugin/utc");
+const timezone = require("dayjs/plugin/timezone");
 const mongoose = require("mongoose");
 const Report = require("../model/reportsModel");
 
+dayjs.extend(utc);
+dayjs.extend(timezone);
 // Add an upcoming appointment
 exports.addUpcomingAppointment = async (req, res) => {
-  const { docId, patientId, date, time, reason, notes } = req.body;
-
+  const { docId, date } = req.body;
+    console.log(date);
+    
+  
+  const patientId = req.user;
   try {
     // Check if all required fields are provided
-    if (!docId || !patientId || !date || !time) {
+    if (!docId || !patientId || !date ) {
       return res.status(400).json({
         message: "Doctor ID, Patient ID, Date, and Time are required.",
       });
@@ -27,13 +34,8 @@ exports.addUpcomingAppointment = async (req, res) => {
       });
     }
 
-    // Get doctor's time zone and adjust the appointment time accordingly
-    const appointmentDate = dayjs
-      .tz(`${date} ${time}`, "YYYY-MM-DD HH:mm", doctor.timeZone || "UTC")
-      .toDate(); // Convert to Date object
-
     // Ensure appointment date is valid and not in the past
-    if (!appointmentDate || appointmentDate < new Date()) {
+    if (!date || date < new Date()) {
       return res
         .status(400)
         .json({ message: "Invalid or past appointment date and time." });
@@ -41,11 +43,11 @@ exports.addUpcomingAppointment = async (req, res) => {
 
     // Create a new upcoming appointment
     const appointment = new Appointment({
-      docId: mongoose.Types.ObjectId(docId),
-      patientId: mongoose.Types.ObjectId(patientId),
-      date: appointmentDate,
-      reason: reason || "",
-      notes: notes || "",
+      doctorId: new mongoose.Types.ObjectId(docId), // Use new keyword here
+      patientId: new mongoose.Types.ObjectId(patientId), // Use new keyword here
+      appointmentDate: date,
+      reason: req.body.reason || "",
+      notes: req.body.notes || "",
     });
 
     // Save the appointment to the database
@@ -70,10 +72,9 @@ exports.addUpcomingAppointment = async (req, res) => {
       .json({ message: "Error occurred while adding appointment", error });
   }
 };
-
 exports.addCompletedAppointment = async (req, res) => {
   const { outcome, appointmentId } = req.body;
-  let newReport ;
+  let newReport;
   try {
     // Find the appointment by ID
     const appointment = await Appointment.findById(appointmentId);
@@ -99,7 +100,6 @@ exports.addCompletedAppointment = async (req, res) => {
         fileUrl: "", // File can be added later if needed
       };
 
-      
       newReport = new Report(reportData);
       await newReport.save();
     }
