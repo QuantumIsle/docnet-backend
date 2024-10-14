@@ -27,8 +27,8 @@ const typeDefs = gql`
   }
 
   type Outcome {
-    diagnosis: String! # The diagnosis from the appointment
-    prescription: [Prescription]!
+    diagnosis: String # The diagnosis from the appointment
+    prescription: [Prescription]
     notes: String # Additional notes related to the outcome (optional)
     reportRequest: [Report] # List of report requests related to the outcome
   }

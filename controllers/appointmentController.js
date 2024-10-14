@@ -6,19 +6,23 @@ const utc = require("dayjs/plugin/utc");
 const timezone = require("dayjs/plugin/timezone");
 const mongoose = require("mongoose");
 const Report = require("../model/reportsModel");
-
+const {
+  sendPatientUpcomingAppointmentEmail,
+  sendDoctorUpcomingAppointmentEmail,
+  sendPatientCompletedAppointmentEmail,
+  sendDoctorCompletedAppointmentEmail,
+} = require("./emailController");
 dayjs.extend(utc);
 dayjs.extend(timezone);
 // Add an upcoming appointment
 exports.addUpcomingAppointment = async (req, res) => {
   const { docId, date } = req.body;
-    console.log(date);
-    
-  
+  console.log(date);
+
   const patientId = req.user;
   try {
     // Check if all required fields are provided
-    if (!docId || !patientId || !date ) {
+    if (!docId || !patientId || !date) {
       return res.status(400).json({
         message: "Doctor ID, Patient ID, Date, and Time are required.",
       });
@@ -56,6 +60,18 @@ exports.addUpcomingAppointment = async (req, res) => {
     // Update the doctor and patient objects to include the new appointment
     doctor.appointments.push(savedAppointment._id);
     patient.appointments.push(savedAppointment._id);
+    await sendPatientUpcomingAppointmentEmail(
+      patient.email,
+      doctor.firstName,
+      date,
+      req.body.reason || ""
+    );
+    await sendDoctorUpcomingAppointmentEmail(
+      doctor.email,
+      patient.firstName,
+      date,
+      req.body.reason || ""
+    );
 
     // Save the updated doctor and patient documents
     await doctor.save();
@@ -72,32 +88,38 @@ exports.addUpcomingAppointment = async (req, res) => {
       .json({ message: "Error occurred while adding appointment", error });
   }
 };
+
 exports.addCompletedAppointment = async (req, res) => {
   const { outcome, appointmentId } = req.body;
   let newReport;
   try {
     // Find the appointment by ID
-    const appointment = await Appointment.findById(appointmentId);
+    const appointment = await Appointment.findById(appointmentId).populate("doctorId").populate("patientId");
     if (!appointment) {
       return res.status(404).json({
         message: "Appointment not found.",
       });
     }
 
+    const doctor = appointment.doctorId;
+    const patient = appointment.patientId;
+
     // Check if all required fields are provided
     if (!outcome || !outcome.diagnosis) {
       return res.status(400).json({
-        message: "Doctor ID, Patient ID, and Outcome (Diagnosis) are required.",
+        message: "Diagnosis and outcome are required.",
       });
     }
+
+    // Create a report if requested
     if (outcome.reportRequest) {
       const reportData = {
-        doctorId: docId,
-        patientId: patientId,
-        appointmentId: newAppointment._id, // Reference to the newly created appointment
-        reportType: outcome.reportRequest, // Assuming this is the type of report requested
-        review: "", // This can be updated later, initially empty
-        fileUrl: "", // File can be added later if needed
+        doctorId: doctor._id,
+        patientId: patient._id,
+        appointmentId: appointment._id, // Reference to the existing appointment
+        reportType: outcome.reportRequest, // Type of report requested
+        review: "", // Initially empty, can be updated later
+        fileUrl: "", // File can be added later
       };
 
       newReport = new Report(reportData);
@@ -109,7 +131,7 @@ exports.addCompletedAppointment = async (req, res) => {
     appointment.outcome = {
       diagnosis: outcome.diagnosis,
       prescription: outcome.prescription || [],
-      reportRequest: newReport._id || [],
+      reportRequest: newReport ? newReport._id : null,
       notes: outcome.notes || "",
     };
 
@@ -118,6 +140,25 @@ exports.addCompletedAppointment = async (req, res) => {
     // Save the completed appointment
     const savedCompletedAppointment = await appointment.save();
 
+    // Send emails to doctor and patient
+    await sendDoctorCompletedAppointmentEmail(
+      doctor.email, 
+      patient.name, 
+      appointment.completedAt, 
+      outcome.diagnosis, 
+      outcome.prescription || [], 
+      newReport ? outcome.reportRequest : null
+    );
+    
+    await sendPatientCompletedAppointmentEmail(
+      patient.email, 
+      doctor.name, 
+      appointment.completedAt, 
+      outcome.diagnosis, 
+      outcome.prescription || [], 
+      newReport ? outcome.reportRequest : null
+    );
+
     // Return success response
     res.status(201).json({
       message: "Completed appointment added successfully.",
@@ -125,8 +166,7 @@ exports.addCompletedAppointment = async (req, res) => {
     });
   } catch (error) {
     console.error("Error adding completed appointment:", error);
-    res
-      .status(500)
-      .json({ message: "Error occurred while adding appointment", error });
+    res.status(500).json({ message: "Error occurred while adding appointment", error });
   }
 };
+

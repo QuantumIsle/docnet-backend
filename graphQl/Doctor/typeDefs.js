@@ -13,16 +13,16 @@ const typeDefs = gql`
     gender: String!
     email: String!
     specialization: String
-    contactNumber: String!
+    contactNumber: String
     videoVisitHours: Int
-    about: String!
+    about: String
     timeZone: String
-    qualifications: [String!]!
-    professionalBackground: String!
+    qualifications: [String!]
+    professionalBackground: String
     rating: Float
     professionStartedYear: Int
     languagesSpoken: String
-    workingHours: WorkingHours!
+    workingHours: WorkingHours
     appointments: [Appointment]
     reviews: [Review]
     reports: [Report]
@@ -32,8 +32,8 @@ const typeDefs = gql`
 
   # Working Hours Type Definition
   type WorkingHours {
-    startTime: String!
-    endTime: String!
+    startTime: String
+    endTime: String
   }
 
   # Review Type Definition
