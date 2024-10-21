@@ -10,11 +10,7 @@ router.post("/login", doctorController.login);
 
 router.post("/auth-check", doctorController.authMiddleware);
 
-router.post(
-    "/review-report",
-    auth,
-    doctorController.reviewReport
-  );
-
+router.post("/review-report", auth, doctorController.reviewReport);
+router.post("/giveDiagnosis", auth, doctorController.giveDiagnosis);
 
 module.exports = router;

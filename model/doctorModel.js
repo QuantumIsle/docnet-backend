@@ -49,7 +49,10 @@ const DoctorSchema = new Schema(
     },
     videoVisitHours: { type: Number, required: false, default: 0 },
 
-    // New fields added here
+    refreshToken: {
+      type: String,
+      required: false,
+    },
     about: {
       type: String,
       required: false,

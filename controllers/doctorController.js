@@ -75,7 +75,7 @@ exports.register = async (req, res) => {
     timeZone,
     phoneNumber,
   } = req.body;
-  console.log(req.body);
+
   try {
     // Create a new patient using the Patient model
     const newDoctor = await Doctor.addDoctor({
@@ -167,7 +167,7 @@ exports.authMiddleware = async (req, res) => {
     const doctor = await Doctor.findById(decoded.id);
 
     // Check if the patient exists and if the refresh token matches
-    if (!patient || patient.refreshToken !== refreshToken) {
+    if (!doctor || doctor.refreshToken !== refreshToken) {
       return res.status(403).json({ message: "Invalid refresh token" });
     }
 
@@ -186,7 +186,7 @@ exports.authMiddleware = async (req, res) => {
     );
 
     // Update the patient's refresh token in the database
-    patient.refreshToken = newRefreshToken;
+    doctor.refreshToken = newRefreshToken;
     await patient.save();
 
     // Set new access and refresh tokens in cookies
@@ -212,14 +212,13 @@ exports.authMiddleware = async (req, res) => {
   }
 };
 
-
 const Report = require("../model/reportsModel"); // Import the Report model
 
 // API handler for reviewing a report
 exports.reviewReport = async (req, res) => {
   try {
     const { reportId, review } = req.body;
-    console.log(req.body);
+
 
     // Validate required fields
     if (!reportId || !review) {
@@ -251,3 +250,86 @@ exports.reviewReport = async (req, res) => {
     return res.status(500).json({ message: "Internal server error." });
   }
 };
+
+const Appointment = require("../model/appointments");
+// Controller to give a diagnosis and create a new report
+exports.giveDiagnosis = async (req, res) => {
+  try {
+    const { patientId, appointmentId, outcome } = req.body; 
+    const doctorId = req.user; 
+
+    console.log("docID: ", doctorId);
+    console.log("outcome: ", outcome);
+    console.log("appID: ", appointmentId);
+    console.log("patientId: ", patientId);
+
+    // Find the appointment by ID
+    const appointment = await Appointment.findOne({ _id: appointmentId });
+
+    // If no appointment is found, return an error
+    if (!appointment) {
+      return res.status(404).json({
+        message: "No Appointment Found",
+      });
+    }
+
+    // Update the appointment outcome
+    appointment.outcome = {
+      diagnosis: outcome.diagnosis,
+      prescription: outcome.prescription,
+      notes: outcome.notes,
+    };
+
+    let newReport;
+
+    // If there is a report request, create a new report
+    if (outcome.reportRequest) {
+      newReport = new Report({
+        doctorId,
+        patientId,
+        appointmentId,
+        reportType: outcome.reportRequest || "General", // Using the reportRequest from outcome if provided
+        review: "", // You may need to add a review later
+        status: "Pending", // Mark the status as pending if the report is yet to be reviewed
+      });
+
+      // Save the new report to the database
+      await newReport.save();
+      console.log(newReport._id);
+
+      // Add the new report to the appointment's reportRequest array
+      appointment.outcome.reportRequest = appointment.outcome.reportRequest || [];
+      appointment.outcome.reportRequest.push(newReport._id);
+    }
+
+    // Save the updated appointment to the database
+    await appointment.save();
+
+    // Find the patient by ID and add the report ID to the reports array
+    const patient = await Patient.findById(patientId);
+
+    if (patient) {
+      patient.reports.push(newReport._id); // Add the new report ID to the patient's reports array
+      await patient.save(); // Save the updated patient
+    } else {
+      return res.status(404).json({
+        message: "No Patient Found",
+      });
+    }
+
+    // Send success response
+    return res.status(201).json({
+      message: "Diagnosis and report saved successfully",
+      report: newReport || null, // Only return the report if it was created
+    });
+  } catch (error) {
+    console.error("Error giving diagnosis:", error);
+
+    // Send error response
+    return res.status(500).json({
+      message: "An error occurred while saving the diagnosis",
+      error: error.message,
+    });
+  }
+};
+

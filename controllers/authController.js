@@ -191,7 +191,7 @@ www.docnetai.com
 
 exports.changePassword = async (req, res) => {
   const { email, userType, newPassword } = req.body;
-  console.log(req.body);
+
 
   try {
     // Check if the user is a doctor or patient based on userType
@@ -201,7 +201,7 @@ exports.changePassword = async (req, res) => {
     } else if (userType === "Patient") {
       user = await Patient.findOne({ email });
     }
-    console.log(user);
+
 
     // If user not found, return an error
     if (!user) {
