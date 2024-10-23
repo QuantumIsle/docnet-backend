@@ -5,7 +5,6 @@ const url = require("url");
 const jwt = require("jsonwebtoken");
 const Doctor = require("./model/doctorModel");
 const Patient = require("./model/patientModel");
-const { log } = require("console");
 const cors = require("cors");
 const Appointment = require("./model/appointments");
 
@@ -125,6 +124,18 @@ ws.on("connection", (ws, req) => {
           (patient) => patient.id === patientId
         );
 
+        // Update the doctor's record with the appointment ID
+        await Doctor.updateOne(
+          { _id: doctorId },
+          { $addToSet: { appointments: appointmentId } } // Add the appointment ID to the appointments array (avoids duplicates)
+        );
+
+        // Update the patient's record with the appointment ID
+        await Patient.updateOne(
+          { _id: patientId },
+          { $addToSet: { appointments: appointmentId } } // Add the appointment ID to the appointments array (avoids duplicates)
+        );
+
         // Send appointment ID to the doctor
         if (targetDoctor && targetDoctor.ws) {
           targetDoctor.ws.send(
@@ -183,6 +194,10 @@ ws.on("connection", (ws, req) => {
             `Patient with ID ${patientId} is not currently connected.`
           );
         }
+
+        // Optionally, you can delete the appointment document from the database if needed
+        await Appointment.deleteOne({ _id: appointmentId });
+        console.log(`Appointment with ID ${appointmentId} has been removed.`);
       }
     } catch (error) {
       console.error("Error parsing message:", error);

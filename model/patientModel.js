@@ -5,7 +5,6 @@ const Schema = mongoose.Schema;
 
 const moment = require("moment-timezone");
 
-
 const validTimeZones = moment.tz.names();
 
 const PatientSchema = new Schema(
