@@ -8,6 +8,7 @@ router.post("/register", patientController.register);
 // Login route
 router.post("/login", patientController.login);
 
+router.post("/change-password", auth, patientController.changePassword);
 router.post("/auth-check", patientController.authMiddleware);
 
 router.post(

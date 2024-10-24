@@ -152,7 +152,7 @@ server.start().then(() => {
   server.applyMiddleware({ app, cors: false });
 
   mongoose
-    .connect(MDB, { useNewUrlParser: true, useUnifiedTopology: true })
+    .connect(MDB)
     .then(() => {
       console.log("Connected to MongoDB");
 

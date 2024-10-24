@@ -133,6 +133,36 @@ exports.register = async (req, res) => {
   }
 };
 
+exports.changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const id = req.user;
+
+  try {
+    // Find the patient by ID
+    const doctor = await Doctor.findOne({ _id: id });
+
+    // Check if patient exists
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    // Compare the old password with the hashed password in the database
+    const isMatch = await bcrypt.compare(currentPassword, doctor.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect current password" });
+    }
+
+    // Update the patient's password
+    doctor.password = newPassword;
+    await doctor.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 exports.authMiddleware = async (req, res) => {
   const accessToken = req.cookies.access_token;
   const refreshToken = req.cookies.refresh_token;
@@ -218,7 +248,7 @@ const Report = require("../model/reportsModel"); // Import the Report model
 exports.reviewReport = async (req, res) => {
   try {
     const { reportId, review } = req.body;
-
+    console.log(req.body);
 
     // Validate required fields
     if (!reportId || !review) {
@@ -255,8 +285,8 @@ const Appointment = require("../model/appointments");
 // Controller to give a diagnosis and create a new report
 exports.giveDiagnosis = async (req, res) => {
   try {
-    const { patientId, appointmentId, outcome } = req.body; 
-    const doctorId = req.user; 
+    const { patientId, appointmentId, outcome } = req.body;
+    const doctorId = req.user;
 
     console.log("docID: ", doctorId);
     console.log("outcome: ", outcome);
@@ -265,7 +295,7 @@ exports.giveDiagnosis = async (req, res) => {
 
     // Find the appointment by ID
     const appointment = await Appointment.findOne({ _id: appointmentId });
-
+    appointment.status = "completed";
     // If no appointment is found, return an error
     if (!appointment) {
       return res.status(404).json({
@@ -298,7 +328,8 @@ exports.giveDiagnosis = async (req, res) => {
       console.log(newReport._id);
 
       // Add the new report to the appointment's reportRequest array
-      appointment.outcome.reportRequest = appointment.outcome.reportRequest || [];
+      appointment.outcome.reportRequest =
+        appointment.outcome.reportRequest || [];
       appointment.outcome.reportRequest.push(newReport._id);
     }
 
@@ -307,10 +338,12 @@ exports.giveDiagnosis = async (req, res) => {
 
     // Find the patient by ID and add the report ID to the reports array
     const patient = await Patient.findById(patientId);
-
+    const doctor = await Doctor.findById(doctorId);
     if (patient) {
-      patient.reports.push(newReport._id); // Add the new report ID to the patient's reports array
-      await patient.save(); // Save the updated patient
+      patient.reports.push(newReport._id);
+      doctor.reports.push(newReport._id);
+      await patient.save();
+      await doctor.save();
     } else {
       return res.status(404).json({
         message: "No Patient Found",
@@ -332,4 +365,3 @@ exports.giveDiagnosis = async (req, res) => {
     });
   }
 };
-

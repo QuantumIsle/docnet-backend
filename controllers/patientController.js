@@ -123,11 +123,40 @@ exports.login = async (req, res) => {
   }
 };
 
+exports.changePassword = async (req, res) => {
+  const { currentPassword, newPassword } = req.body;
+  const id = req.user;
+  
+  try {
+    // Find the patient by ID
+    const patient = await Patient.findOne({ _id: id });
+
+    // Check if patient exists
+    if (!patient) {
+      return res.status(404).json({ message: "Patient not found" });
+    }
+
+    // Compare the old password with the hashed password in the database
+    const isMatch = await bcrypt.compare(currentPassword, patient.password);
+    if (!isMatch) {
+      return res.status(400).json({ message: "Incorrect current password" });
+    }
+
+    // Update the patient's password
+    patient.password = newPassword;
+    await patient.save();
+
+    res.status(200).json({ message: "Password changed successfully" });
+  } catch (error) {
+    console.error("Error changing password:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
 // Refreshes the access token using the refresh token
 exports.authMiddleware = async (req, res) => {
   const accessToken = req.cookies.access_token;
   const refreshToken = req.cookies.refresh_token;
-
 
   // Check if access token exists and is valid
   if (accessToken) {

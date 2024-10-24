@@ -5,6 +5,7 @@ const auth = require("../authentication/patientAuth");
 // Register route
 router.post("/register", doctorController.register);
 
+router.post("/change-password",auth, doctorController.changePassword);
 // Login route
 router.post("/login", doctorController.login);
 

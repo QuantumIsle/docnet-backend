@@ -26,10 +26,7 @@ const mongoose = require("mongoose");
 // Connect to MongoDB
 const dbURI = process.env.MONGO_URI;
 mongoose
-  .connect(dbURI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(dbURI)
   .then(() => {
     console.log("MongoDB connected successfully");
   })
