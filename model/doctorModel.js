@@ -20,6 +20,10 @@ const DoctorSchema = new Schema(
       type: String,
       required: false,
     },
+    // country: {
+    //   type: String,
+    //   required: true,
+    // },
     dateOfBirth: {
       type: Date,
       required: true,
@@ -48,7 +52,29 @@ const DoctorSchema = new Schema(
       required: true,
     },
     videoVisitHours: { type: Number, required: false, default: 0 },
-
+    certificates: [
+      {
+        certificateName: {
+          type: String,
+          required: true,
+        },
+        description:{
+          type: String,
+          required: true,
+        },
+        valid: {
+          type: Boolean,
+          required: true,
+          default: false,
+        },
+        links: [
+          {
+            type: String, // Each certificate can have multiple links
+            required: false,
+          },
+        ],
+      },
+    ],
     refreshToken: {
       type: String,
       required: false,

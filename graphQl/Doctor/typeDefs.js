@@ -20,6 +20,7 @@ const typeDefs = gql`
     qualifications: [String!]
     professionalBackground: String
     rating: Float
+    certificates:[Certificates]
     professionStartedYear: Int
     languagesSpoken: String
     workingHours: WorkingHours
@@ -28,6 +29,12 @@ const typeDefs = gql`
     reports: [Report]
     createdAt: Date!
     updatedAt: Date!
+  }
+
+  type Certificates{
+      certificateName: String
+      valid:Boolean
+      links: [String]
   }
 
   # Working Hours Type Definition

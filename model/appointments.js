@@ -16,7 +16,7 @@ const AppointmentSchema = new Schema(
     },
     appointmentNumber: {
       type: String,
-      unique: true, 
+      unique: true,
     },
     status: {
       type: String,
@@ -46,6 +46,11 @@ const AppointmentSchema = new Schema(
     },
     appointmentDate: {
       type: Date,
+      required: true,
+    },
+    appointmentType: {
+      type: String,
+      default: "normal",
       required: true,
     },
     completedAt: {

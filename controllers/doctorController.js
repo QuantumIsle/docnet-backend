@@ -77,6 +77,27 @@ exports.register = async (req, res) => {
   } = req.body;
 
   try {
+    const certificates = [
+      {
+        certificateName: "Sri Lanka Medical Council Registration Certificate",
+      },
+      {
+        certificateName:
+          "MBBS Degree Certificate (or equivalent medical degree)",
+      },
+      {
+        certificateName: "Postgraduate Qualification Certificates (if any)",
+      },
+      {
+        certificateName: "Internship Completion Certificate (if any)",
+      },
+      {
+        certificateName: "National Identity Card (NIC) or Passport",
+      },
+      {
+        certificateName: "Work Experience Letters (if any)",
+      },
+    ];
     // Create a new patient using the Patient model
     const newDoctor = await Doctor.addDoctor({
       firstName,
@@ -87,6 +108,7 @@ exports.register = async (req, res) => {
       password,
       timeZone,
       contactNumber: phoneNumber,
+      certificates,
     });
 
     if (newDoctor) {
@@ -365,3 +387,193 @@ exports.giveDiagnosis = async (req, res) => {
     });
   }
 };
+
+const fs = require("fs");
+const { google } = require("googleapis");
+const multer = require("multer");
+// Setup multer to handle multiple file uploads
+const upload = multer({ dest: "uploads/" });
+
+const apikeys = require("./token.json");
+const { log } = require("console");
+const SCOPE = ["https://www.googleapis.com/auth/drive"];
+
+// A Function that can provide access to Google Drive API
+async function authorize() {
+  const jwtClient = new google.auth.JWT(
+    apikeys.client_email,
+    null,
+    apikeys.private_key,
+    SCOPE
+  );
+
+  await jwtClient.authorize();
+
+  return jwtClient;
+}
+
+// A Function to check if a folder exists for the doctor, and create it if it doesn't
+async function getOrCreateFolder(authClient, doctorId) {
+  const drive = google.drive({ version: "v3", auth: authClient });
+
+  const folderList = await drive.files.list({
+    q: `mimeType='application/vnd.google-apps.folder' and name='${doctorId}' and trashed=false`,
+    fields: "files(id, name)",
+  });
+
+  if (folderList.data.files.length > 0) {
+    return folderList.data.files[0].id;
+  }
+
+  const folderMetadata = {
+    name: doctorId,
+    mimeType: "application/vnd.google-apps.folder",
+    parents: ["1wAobbjcMFobmXRpaInTc20o19NJZVJz1"],
+  };
+
+  const folder = await drive.files.create({
+    resource: folderMetadata,
+    fields: "id",
+  });
+
+  return folder.data.id;
+}
+
+// A Function to upload a file to Google Drive and return its ID
+async function uploadFile(authClient, filePath, fileName, folderId) {
+  return new Promise((resolve, reject) => {
+    const drive = google.drive({ version: "v3", auth: authClient });
+
+    const fileMetaData = {
+      name: fileName,
+      parents: [folderId],
+    };
+
+    const media = {
+      body: fs.createReadStream(filePath),
+      mimeType: "application/pdf",
+    };
+
+    drive.files.create(
+      {
+        resource: fileMetaData,
+        media: media,
+        fields: "id",
+      },
+      function (error, file) {
+        if (error) {
+          return reject(error);
+        }
+        resolve(file.data.id);
+      }
+    );
+  });
+}
+
+// A Function to set file permissions to be shareable
+async function setFilePublic(authClient, fileId) {
+  const drive = google.drive({ version: "v3", auth: authClient });
+  return new Promise((resolve, reject) => {
+    drive.permissions.create(
+      {
+        fileId: fileId,
+        resource: {
+          role: "reader",
+          type: "anyone",
+        },
+      },
+      function (error) {
+        if (error) {
+          return reject(error);
+        }
+        resolve(fileId);
+      }
+    );
+  });
+}
+
+// A Function to get the shareable link
+async function getShareableLink(authClient, fileId) {
+  const drive = google.drive({ version: "v3", auth: authClient });
+  return new Promise((resolve, reject) => {
+    drive.files.get(
+      {
+        fileId: fileId,
+        fields: "webViewLink",
+      },
+      function (error, file) {
+        if (error) {
+          return reject(error);
+        }
+        resolve(file.data.webViewLink);
+      }
+    );
+  });
+}
+
+// Modified reportUpload function to handle multiple files
+exports.certificateUpload = async (req, res) => {
+  const { fileName, userId, certificateId } = req.body;
+
+  try {
+    const doctor = await Doctor.findById(userId);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    const certificates = doctor.certificates;
+
+    // Find the correct certificate by ID
+    const certificate = certificates.find((cert) => cert._id.toString() === certificateId);
+    if (!certificate) {
+      return res.status(404).json({ message: "Certificate not found" });
+    }
+
+    if (!fileName) {
+      return res.status(400).json({ message: "File name is required" });
+    }
+
+    const files = req.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No files uploaded" });
+    }
+
+    const authClient = await authorize();
+    const folderId = await getOrCreateFolder(authClient, userId);
+
+    const fileLinks = [];
+
+    for (const file of files) {
+      const { originalname, path } = file;
+      console.log(`File received: ${originalname}`);
+
+      const fileId = await uploadFile(authClient, path, fileName, folderId);
+      await setFilePublic(authClient, fileId);
+      const shareableLink = await getShareableLink(authClient, fileId);
+
+      fileLinks.push({ fileName: originalname, link: shareableLink });
+    }
+
+    // Add the links to the certificate's links array
+    certificate.links.push(...fileLinks.map(file => file.link));
+
+    // Save the updated doctor document
+    await doctor.save();
+
+    res.status(200).json({
+      message: "Files uploaded and certificate updated successfully",
+      links: fileLinks,
+    });
+  } catch (error) {
+    console.error("Error uploading files:", error);
+    res.status(500).json({ message: "Error uploading files", error });
+  } finally {
+    if (req.files) {
+      req.files.forEach(file => fs.unlinkSync(file.path));
+    }
+  }
+};
+
+
+// Middleware to handle multiple file uploads
+exports.uploadMiddleware = upload.array("files", 10); // Adjust the maximum file count as needed

@@ -27,7 +27,6 @@ const AppointmentTypeDefs = require("./graphQl/Appointments/typeDefs");
 
 const ReportTypeDefs = require("./graphQl/Reports/typeDefs");
 
-
 const app = express();
 
 const auth = require("./authentication/patientAuth");
@@ -36,7 +35,7 @@ const SDK_KEY = process.env.SDK_KEY;
 const SDK_SECRET = process.env.SDK_SECRET;
 
 const corsOptions = {
- // origin: process.env.FRONTEND_URL, // React frontend's URL
+  // origin: process.env.FRONTEND_URL, // React frontend's URL
   credentials: true, // Allow cookies (credentials) to be sent and received
 };
 
@@ -69,9 +68,9 @@ app.use("/auth", require("./routes/authRoutes"));
 app.use("/appointments", require("./routes/appointmentRoutes"));
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
+app.use("/admins", require("./routes/adminRoutes"));
 
 // app.use(auth);
-
 const Doctor = require("./model/doctorModel");
 const Patient = require("./model/patientModel");
 
