@@ -17,6 +17,7 @@ const typeDefs = gql`
     videoVisitHours: Int
     about: String
     timeZone: String
+    country:String
     qualifications: [String!]
     professionalBackground: String
     rating: Float

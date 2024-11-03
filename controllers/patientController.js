@@ -10,9 +10,11 @@ exports.register = async (req, res) => {
     gender,
     email,
     password,
+    phoneNumber,
     timeZone,
+    country,
   } = req.body;
-
+  console.log(req.body);
   try {
     // Create a new patient using the Patient model
     const patient = await Patient.addPatient({
@@ -23,6 +25,8 @@ exports.register = async (req, res) => {
       email,
       password,
       timeZone,
+      contactNumber: phoneNumber,
+      country,
     });
 
     // If patient is created successfully, send response
@@ -126,7 +130,7 @@ exports.login = async (req, res) => {
 exports.changePassword = async (req, res) => {
   const { currentPassword, newPassword } = req.body;
   const id = req.user;
-  
+
   try {
     // Find the patient by ID
     const patient = await Patient.findOne({ _id: id });

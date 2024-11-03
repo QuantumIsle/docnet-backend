@@ -20,10 +20,10 @@ const DoctorSchema = new Schema(
       type: String,
       required: false,
     },
-    // country: {
-    //   type: String,
-    //   required: true,
-    // },
+    country: {
+      type: String,
+      required: false,
+    },
     dateOfBirth: {
       type: Date,
       required: true,

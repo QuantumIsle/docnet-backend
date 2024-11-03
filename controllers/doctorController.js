@@ -65,6 +65,8 @@ exports.login = async (req, res) => {
 };
 
 exports.register = async (req, res) => {
+  console.log(req.body);
+
   const {
     firstName,
     lastName,
@@ -74,6 +76,7 @@ exports.register = async (req, res) => {
     password,
     timeZone,
     phoneNumber,
+    country,
   } = req.body;
 
   try {
@@ -108,7 +111,7 @@ exports.register = async (req, res) => {
       password,
       timeZone,
       contactNumber: phoneNumber,
-      certificates,
+      country
     });
 
     if (newDoctor) {
@@ -310,11 +313,6 @@ exports.giveDiagnosis = async (req, res) => {
     const { patientId, appointmentId, outcome } = req.body;
     const doctorId = req.user;
 
-    console.log("docID: ", doctorId);
-    console.log("outcome: ", outcome);
-    console.log("appID: ", appointmentId);
-    console.log("patientId: ", patientId);
-
     // Find the appointment by ID
     const appointment = await Appointment.findOne({ _id: appointmentId });
     appointment.status = "completed";
@@ -347,7 +345,6 @@ exports.giveDiagnosis = async (req, res) => {
 
       // Save the new report to the database
       await newReport.save();
-      console.log(newReport._id);
 
       // Add the new report to the appointment's reportRequest array
       appointment.outcome.reportRequest =
@@ -524,7 +521,9 @@ exports.certificateUpload = async (req, res) => {
     const certificates = doctor.certificates;
 
     // Find the correct certificate by ID
-    const certificate = certificates.find((cert) => cert._id.toString() === certificateId);
+    const certificate = certificates.find(
+      (cert) => cert._id.toString() === certificateId
+    );
     if (!certificate) {
       return res.status(404).json({ message: "Certificate not found" });
     }
@@ -555,7 +554,7 @@ exports.certificateUpload = async (req, res) => {
     }
 
     // Add the links to the certificate's links array
-    certificate.links.push(...fileLinks.map(file => file.link));
+    certificate.links.push(...fileLinks.map((file) => file.link));
 
     // Save the updated doctor document
     await doctor.save();
@@ -569,11 +568,10 @@ exports.certificateUpload = async (req, res) => {
     res.status(500).json({ message: "Error uploading files", error });
   } finally {
     if (req.files) {
-      req.files.forEach(file => fs.unlinkSync(file.path));
+      req.files.forEach((file) => fs.unlinkSync(file.path));
     }
   }
 };
-
 
 // Middleware to handle multiple file uploads
 exports.uploadMiddleware = upload.array("files", 10); // Adjust the maximum file count as needed

@@ -25,6 +25,14 @@ const PatientSchema = new Schema(
       type: Date,
       required: true,
     },
+    country: {
+      type: String,
+      required: true,
+    },
+    contactNumber: {
+      type: String,
+      required: true,
+    },
     gender: {
       type: String,
       enum: ["male", "female", "other"],
@@ -145,7 +153,6 @@ PatientSchema.statics.addPatient = async function (patientData) {
     throw new Error(error.message);
   }
 };
-
 
 const Patient = mongoose.model("Patient", PatientSchema);
 
