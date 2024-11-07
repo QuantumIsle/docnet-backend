@@ -46,7 +46,7 @@ const resolvers = {
             path: "patientId",
           },
         });
-      console.log(data);
+      
 
       return data;
     },

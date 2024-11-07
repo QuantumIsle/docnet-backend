@@ -80,27 +80,7 @@ exports.register = async (req, res) => {
   } = req.body;
 
   try {
-    const certificates = [
-      {
-        certificateName: "Sri Lanka Medical Council Registration Certificate",
-      },
-      {
-        certificateName:
-          "MBBS Degree Certificate (or equivalent medical degree)",
-      },
-      {
-        certificateName: "Postgraduate Qualification Certificates (if any)",
-      },
-      {
-        certificateName: "Internship Completion Certificate (if any)",
-      },
-      {
-        certificateName: "National Identity Card (NIC) or Passport",
-      },
-      {
-        certificateName: "Work Experience Letters (if any)",
-      },
-    ];
+   
     // Create a new patient using the Patient model
     const newDoctor = await Doctor.addDoctor({
       firstName,
@@ -273,7 +253,7 @@ const Report = require("../model/reportsModel"); // Import the Report model
 exports.reviewReport = async (req, res) => {
   try {
     const { reportId, review } = req.body;
-    console.log(req.body);
+    
 
     // Validate required fields
     if (!reportId || !review) {

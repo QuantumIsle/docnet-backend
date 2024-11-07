@@ -14,7 +14,7 @@ exports.register = async (req, res) => {
     timeZone,
     country,
   } = req.body;
-  console.log(req.body);
+
   try {
     // Create a new patient using the Patient model
     const patient = await Patient.addPatient({

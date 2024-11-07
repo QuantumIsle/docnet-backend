@@ -58,7 +58,7 @@ const DoctorSchema = new Schema(
           type: String,
           required: true,
         },
-        description:{
+        certificateDescription:{
           type: String,
           required: true,
         },

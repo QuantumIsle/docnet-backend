@@ -17,12 +17,13 @@ const typeDefs = gql`
     videoVisitHours: Int
     about: String
     timeZone: String
-    country:String
+    country: String
     qualifications: [String!]
     professionalBackground: String
     rating: Float
-    certificates:[Certificates]
+    certificates: [Certificates]
     professionStartedYear: Int
+    verified: Boolean
     languagesSpoken: String
     workingHours: WorkingHours
     appointments: [Appointment]
@@ -32,10 +33,11 @@ const typeDefs = gql`
     updatedAt: Date!
   }
 
-  type Certificates{
-      certificateName: String
-      valid:Boolean
-      links: [String]
+  type Certificates {
+    certificateName: String
+    certificateDescription: String
+    valid: Boolean
+    links: [String]
   }
 
   # Working Hours Type Definition
