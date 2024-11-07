@@ -4,7 +4,6 @@ const Patient = require("../model/patientModel");
 exports.requestCertificates = async (req, res) => {
   const { doctorId, certificates } = req.body;
 
-  console.log(req.body);
 
   try {
     const doctor = await Doctor.findById(doctorId);

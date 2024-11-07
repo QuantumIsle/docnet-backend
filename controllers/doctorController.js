@@ -80,7 +80,6 @@ exports.register = async (req, res) => {
   } = req.body;
 
   try {
-   
     // Create a new patient using the Patient model
     const newDoctor = await Doctor.addDoctor({
       firstName,
@@ -91,7 +90,7 @@ exports.register = async (req, res) => {
       password,
       timeZone,
       contactNumber: phoneNumber,
-      country
+      country,
     });
 
     if (newDoctor) {
@@ -253,7 +252,6 @@ const Report = require("../model/reportsModel"); // Import the Report model
 exports.reviewReport = async (req, res) => {
   try {
     const { reportId, review } = req.body;
-    
 
     // Validate required fields
     if (!reportId || !review) {

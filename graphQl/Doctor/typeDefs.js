@@ -38,6 +38,7 @@ const typeDefs = gql`
     certificateDescription: String
     valid: Boolean
     links: [String]
+    id: ID!
   }
 
   # Working Hours Type Definition
