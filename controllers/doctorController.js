@@ -5,7 +5,8 @@ const Patient = require("../model/patientModel");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
-
+  console.log(req.body);
+  
   try {
     // Find the doctor by email
     const doctor = await Doctor.findOne({ email });
@@ -17,7 +18,8 @@ exports.login = async (req, res) => {
 
     // Compare the provided password with the stored hashed password
     const isMatch = await bcrypt.compare(password, doctor.password);
-
+    console.log(isMatch);
+    
     // If passwords don't match, return an error
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
@@ -488,8 +490,7 @@ async function getShareableLink(authClient, fileId) {
 
 // Modified reportUpload function to handle multiple files
 exports.certificateUpload = async (req, res) => {
-  const { fileName, userId, certificateId } = req.body;
-
+  const { fileName, certificateId } = req.body;
   try {
     const doctor = await Doctor.findById(userId);
     if (!doctor) {

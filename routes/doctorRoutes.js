@@ -16,6 +16,7 @@ router.post("/giveDiagnosis", auth, doctorController.giveDiagnosis);
 
 router.post(
   "/certificate-upload",
+  auth,
   doctorController.uploadMiddleware,
   doctorController.certificateUpload
 );
