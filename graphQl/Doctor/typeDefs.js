@@ -36,7 +36,7 @@ const typeDefs = gql`
   type Certificates {
     certificateName: String
     certificateDescription: String
-    valid: Boolean
+    valid: String
     links: [String]
     id: ID!
   }
