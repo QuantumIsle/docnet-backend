@@ -63,7 +63,7 @@ const DoctorSchema = new Schema(
           required: true,
         },
         valid: {
-          type: Boolean,
+          type: String,
           enum: ["-1", "0", "1"],
           required: true,
           default: "0",
