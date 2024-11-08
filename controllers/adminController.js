@@ -43,9 +43,9 @@ exports.acceptOrRejectCertificates = async (req, res) => {
     }
 
     if (accept == "1") {
-      certificate.valid = true;
+      certificate.valid = "1";
     } else {
-      certificate.valid = false;
+      certificate.valid = "-1";
     }
 
     // Save the doctor document with the updated certificate

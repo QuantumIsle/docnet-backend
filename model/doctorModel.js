@@ -58,14 +58,15 @@ const DoctorSchema = new Schema(
           type: String,
           required: true,
         },
-        certificateDescription:{
+        certificateDescription: {
           type: String,
           required: true,
         },
         valid: {
           type: Boolean,
+          enum: ["-1", "0", "1"],
           required: true,
-          default: false,
+          default: "0",
         },
         links: [
           {
