@@ -46,11 +46,10 @@ const resolvers = {
             path: "patientId",
           },
         });
-      
 
       return data;
     },
-    getAllDoctors: async () => {
+    getAllDoctors: async (_, { verified }, __) => {
       let data = await Doctor.find()
         .populate({
           path: "reviews",
@@ -65,8 +64,13 @@ const resolvers = {
             path: "patientId",
           },
         });
-      data = data.filter((doctor) => !doctor.verified);
-      return data;
+
+      let processedData = data;
+
+      if (verified) {
+        processedData = data.filter((doc) => doc.verified == true);
+      }
+      return processedData;
     },
   },
 

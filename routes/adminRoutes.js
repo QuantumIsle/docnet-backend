@@ -10,4 +10,7 @@ router.post(
 );
 
 router.post("/validateDoctor", adminController.acceptOrRejectDoctor);
+
+router.post("/validatePatient", adminController.acceptOrRejectPatient);
+
 module.exports = router;

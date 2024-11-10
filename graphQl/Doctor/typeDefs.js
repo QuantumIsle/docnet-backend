@@ -88,7 +88,7 @@ const typeDefs = gql`
 
   # Query Type Definition
   type Query {
-    getAllDoctors: [Doctor!]!
+    getAllDoctors(verified: Boolean): [Doctor!]!
     getDoctor: Doctor
     getDoctorById(id: ID!): Doctor
   }

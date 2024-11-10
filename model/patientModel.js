@@ -91,6 +91,11 @@ const PatientSchema = new Schema(
       type: String,
       required: false,
     },
+    active: {
+      type: Boolean,
+      required: true,
+      default: true,
+    },
     reports: [
       {
         type: Schema.Types.ObjectId,

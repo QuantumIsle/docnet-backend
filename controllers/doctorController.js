@@ -491,6 +491,11 @@ async function getShareableLink(authClient, fileId) {
 // Modified reportUpload function to handle multiple files
 exports.certificateUpload = async (req, res) => {
   const { fileName, certificateId } = req.body;
+ 
+  const userId=req.user
+  console.log(req.user);
+  console.log(req.body);
+  
   try {
     const doctor = await Doctor.findById(userId);
     if (!doctor) {

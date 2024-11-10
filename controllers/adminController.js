@@ -4,7 +4,6 @@ const Patient = require("../model/patientModel");
 exports.requestCertificates = async (req, res) => {
   const { doctorId, certificates } = req.body;
 
-
   try {
     const doctor = await Doctor.findById(doctorId);
     if (!doctor) {
@@ -75,10 +74,37 @@ exports.acceptOrRejectDoctor = async (req, res) => {
     doctor.verified = accept === "1";
 
     await doctor.save();
-    res.status(200).json({ message: accept === "1" ? "Doctor accepted" : "Doctor rejected", doctor });
+    res.status(200).json({
+      message: accept === "1" ? "Doctor accepted" : "Doctor rejected",
+      doctor,
+    });
   } catch (error) {
     console.error("Error updating doctor verification status:", error);
     res.status(500).json({ message: "Error updating verification status" });
   }
 };
 
+exports.acceptOrRejectPatient = async (req, res) => {
+  const { patientId, accept } = req.body;
+
+  console.log(req.body);
+
+  try {
+    const patient = await Patient.findById(patientId);
+    if (!patient) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    // Set the verified status based on the accept parameter
+    patient.active = !accept === "0";
+
+    await patient.save();
+    res.status(200).json({
+      message: accept === "1" ? "patient rejected" : "patient accepted",
+      patient,
+    });
+  } catch (error) {
+    console.error("Error updating doctor verification status:", error);
+    res.status(500).json({ message: "Error updating verification status" });
+  }
+};
