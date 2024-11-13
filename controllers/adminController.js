@@ -1,5 +1,32 @@
 const Doctor = require("../model/doctorModel");
 const Patient = require("../model/patientModel");
+require("dotenv").config();
+
+exports.login = async (req, res) => {
+  const { email, password } = req.body;
+  console.log("Login attempt:", req.body);
+
+  try {
+    // Get admin credentials from environment variables
+    const adminEmail = process.env.ADMIN_EMAIL;
+    const adminPassword = process.env.ADMIN_PASSWORD;
+
+    // Check if provided credentials match the admin credentials
+    const isMatch = email === adminEmail && password === adminPassword;
+    console.log("Credentials match:", isMatch);
+
+    if (!isMatch) {
+      return res.status(400).json({ message: "Invalid email or password" });
+    }
+
+    res.status(200).json({
+      message: "Login successful",
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
 
 exports.requestCertificates = async (req, res) => {
   const { doctorId, certificates } = req.body;
