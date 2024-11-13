@@ -395,6 +395,59 @@ exports.reportUpload = async (req, res) => {
     }
   }
 };
+exports.profileImageUpload = async (req, res) => {
+  const { fileName } = req.body;
+  const userId = req.user;
+
+  console.log("User ID:", req.user);
+  console.log("Request Body:", req.body);
+
+  try {
+    
+    const patient = await Patient.findById(userId);
+    if (!patient) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    if (!fileName) {
+      return res.status(400).json({ message: "File name is required" });
+    }
+
+    const files = req.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const authClient = await authorize();
+    const folderId = await getOrCreateFolder(authClient, userId);
+
+    const { originalname, path } = files[0];
+    console.log(`File received: ${originalname}`);
+
+   
+    const fileId = await uploadFile(authClient, path, fileName, folderId);
+    await setFilePublic(authClient, fileId);
+    const profileImageLink = await getShareableLink(authClient, fileId);
+
+   
+    patient.imgUrl = profileImageLink;
+
+   
+    await patient.save();
+
+    res.status(200).json({
+      message: "Profile image uploaded successfully",
+      link: profileImageLink,
+    });
+  } catch (error) {
+    console.error("Error uploading profile image:", error);
+    res.status(500).json({ message: "Error uploading profile image", error });
+  } finally {
+    if (req.files) {
+      req.files.forEach((file) => fs.unlinkSync(file.path));
+    }
+  }
+};
 
 // Middleware to handle file upload
 exports.uploadMiddleware = upload.single("file"); // 'file' is the field name expected in the form data

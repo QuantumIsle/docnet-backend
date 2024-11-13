@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const doctorController = require("../controllers/doctorController");
 const auth = require("../authentication/patientAuth");
+
 // Register route
 router.post("/register", doctorController.register);
 
@@ -19,5 +20,12 @@ router.post(
   auth,
   doctorController.uploadMiddleware,
   doctorController.certificateUpload
+);
+
+router.post(
+  "/profile-image-upload",
+  auth,
+  doctorController.uploadMiddleware,
+  doctorController.profileImageUpload
 );
 module.exports = router;

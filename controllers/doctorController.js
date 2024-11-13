@@ -6,7 +6,7 @@ const Patient = require("../model/patientModel");
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   console.log(req.body);
-  
+
   try {
     // Find the doctor by email
     const doctor = await Doctor.findOne({ email });
@@ -19,7 +19,7 @@ exports.login = async (req, res) => {
     // Compare the provided password with the stored hashed password
     const isMatch = await bcrypt.compare(password, doctor.password);
     console.log(isMatch);
-    
+
     // If passwords don't match, return an error
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
@@ -368,11 +368,8 @@ exports.giveDiagnosis = async (req, res) => {
 const fs = require("fs");
 const { google } = require("googleapis");
 const multer = require("multer");
-// Setup multer to handle multiple file uploads
 const upload = multer({ dest: "uploads/" });
-
 const apikeys = require("./token.json");
-const { log } = require("console");
 const SCOPE = ["https://www.googleapis.com/auth/drive"];
 
 // A Function that can provide access to Google Drive API
@@ -491,11 +488,11 @@ async function getShareableLink(authClient, fileId) {
 // Modified reportUpload function to handle multiple files
 exports.certificateUpload = async (req, res) => {
   const { fileName, certificateId } = req.body;
- 
-  const userId=req.user
+
+  const userId = req.user;
   console.log(req.user);
   console.log(req.body);
-  
+
   try {
     const doctor = await Doctor.findById(userId);
     if (!doctor) {
@@ -550,6 +547,59 @@ exports.certificateUpload = async (req, res) => {
   } catch (error) {
     console.error("Error uploading files:", error);
     res.status(500).json({ message: "Error uploading files", error });
+  } finally {
+    if (req.files) {
+      req.files.forEach((file) => fs.unlinkSync(file.path));
+    }
+  }
+};
+exports.profileImageUpload = async (req, res) => {
+  const { fileName } = req.body;
+  const userId = req.user;
+
+  console.log("User ID:", req.user);
+  console.log("Request Body:", req.body);
+
+  try {
+    // Find doctor by ID
+    const doctor = await Doctor.findById(userId);
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    if (!fileName) {
+      return res.status(400).json({ message: "File name is required" });
+    }
+
+    const files = req.files;
+    if (!files || files.length === 0) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+
+    const authClient = await authorize();
+    const folderId = await getOrCreateFolder(authClient, userId);
+
+    const { originalname, path } = files[0];
+    console.log(`File received: ${originalname}`);
+
+    // Upload file and get its ID and shareable link
+    const fileId = await uploadFile(authClient, path, fileName, folderId);
+    await setFilePublic(authClient, fileId);
+    const profileImageLink = await getShareableLink(authClient, fileId);
+
+    // Set the profile image link in the doctor document
+    doctor.imageUrl = profileImageLink;
+
+    // Save the updated doctor document
+    await doctor.save();
+
+    res.status(200).json({
+      message: "Profile image uploaded successfully",
+      link: profileImageLink,
+    });
+  } catch (error) {
+    console.error("Error uploading profile image:", error);
+    res.status(500).json({ message: "Error uploading profile image", error });
   } finally {
     if (req.files) {
       req.files.forEach((file) => fs.unlinkSync(file.path));

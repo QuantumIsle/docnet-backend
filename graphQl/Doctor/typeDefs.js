@@ -71,6 +71,7 @@ const typeDefs = gql`
       contactNumber: String
       videoVisitHours: Int
       about: String
+      country: String
       timeZone: String
       qualifications: [String]
       professionalBackground: String

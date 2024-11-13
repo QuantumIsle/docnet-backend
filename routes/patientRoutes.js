@@ -17,7 +17,12 @@ router.post(
   patientController.uploadMiddleware,
   patientController.reportUpload
 );
-
+router.post(
+  "/profile-image-upload",
+  auth,
+  patientController.uploadMiddleware,
+  patientController.profileImageUpload
+);
 router.post("/addReview", auth, patientController.addReview);
 
 module.exports = router;

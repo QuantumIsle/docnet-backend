@@ -49,6 +49,7 @@ const typeDefs = gql`
       height: Float
       bloodType: String
       imgUrl: String
+      country: String
       timeZone: String
     ): Patient
   }
