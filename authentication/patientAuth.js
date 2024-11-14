@@ -5,6 +5,8 @@ const authenticateToken = (req, res, next) => {
   // Retrieve token from cookies
   const token = req.cookies.access_token;
 
+  console.log('token is : ' + token); // for debugging
+
   if (!token) {
     return res
       .status(401)

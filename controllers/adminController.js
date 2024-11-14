@@ -1,5 +1,6 @@
 const Doctor = require("../model/doctorModel");
 const Patient = require("../model/patientModel");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 exports.login = async (req, res) => {
@@ -18,6 +19,21 @@ exports.login = async (req, res) => {
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
+
+    // Generate access and refresh tokens
+    const accessToken = jwt.sign(
+      { id: email },
+      process.env.ACCESS_TOKEN,
+      { expiresIn: "3h" }
+    );
+
+    // Set cookies for accessToken
+    res.cookie("access_token", accessToken, {
+      httpOnly: true, // Secure flag should be added for production
+      secure: true,
+      maxAge: 3 * 60 * 60 * 1000, // 3 hours
+      sameSite: "Strict",
+    });
 
     res.status(200).json({
       message: "Login successful",
