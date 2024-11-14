@@ -274,7 +274,7 @@ async function getOrCreateFolder(authClient, userId) {
   }
 
   const folderMetadata = {
-    name: doctorId,
+    name: userId,
     mimeType: "application/vnd.google-apps.folder",
     parents: ["1wAobbjcMFobmXRpaInTc20o19NJZVJz1"],
   };
