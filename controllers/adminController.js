@@ -27,6 +27,10 @@ exports.login = async (req, res) => {
       { expiresIn: "3h" }
     );
 
+
+
+    console.log("Access token:", accessToken);
+
     // Set cookies for accessToken
     res.cookie("access_token", accessToken, {
       httpOnly: true, // Secure flag should be added for production
@@ -41,6 +45,54 @@ exports.login = async (req, res) => {
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+exports.authMiddleware = async (req, res) => {
+  const accessToken = req.cookies.access_token;
+
+  console.log("Access token in middleware:", accessToken);
+
+  // Check if access token exists and is valid
+  if (accessToken) {
+    try {
+      // Verify the access token
+      const decoded = jwt.verify(accessToken, process.env.ACCESS_TOKEN);
+
+      if (decoded) {
+        console.log("Authenticated");
+        return res.status(200).json({ message: "Authenticated" });
+      } else {
+        console.log("Invalid token");
+        return res.status(401).json({ message: "Invalid token" });
+      }
+    } catch (error) {
+      // Access token is invalid or expired, try refreshing the token
+      console.log("Access token expired or invalid");
+    }
+  }
+
+  try {
+    // Generate a new access token (valid for 2 hours)
+    const newAccessToken = jwt.sign(
+      { id: email },
+      process.env.ACCESS_TOKEN,
+      { expiresIn: "3h" }
+    );
+
+    // Set new access and refresh tokens in cookies
+    res.cookie("access_token", newAccessToken, {
+      httpOnly: true,
+      secure: true, // Use secure cookies in production
+      sameSite: "Strict",
+      maxAge: 3 * 60 * 60 * 1000, // 3 hours
+    });
+
+    return res.status(200).json({ message: "Token refreshed successfully" });
+  } catch (error) {
+    return res
+      .status(403)
+      .json({ message: "Invalid or expired refresh token", error });
   }
 };
 
