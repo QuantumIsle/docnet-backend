@@ -2,10 +2,8 @@ const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const authenticateToken = (req, res, next) => {
-  // Retrieve token from cookies
-  const token = req.cookies.access_token;
-
-  console.log('token is : ' + token); // for debugging
+  const token = req.cookies.access_token; // Now matches the name used in login
+  console.log("Token is:", token);
 
   if (!token) {
     return res

@@ -5,7 +5,7 @@ const adminController = require("../controllers/adminController");
 
 router.post("/login", adminController.login);
 router.post("/requestCertificates", adminController.requestCertificates);
-router.post("/auth-check", adminController.authMiddleware);
+
 
 router.post(
   "/validateCertificates",
