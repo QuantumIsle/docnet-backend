@@ -363,7 +363,6 @@ const Report = require("./../model/reportsModel");
 
 exports.reportUpload = async (req, res) => {
   try {
-   
     const userId = req.user; // Assuming the user info comes from middleware
     const { reportId } = req.body; // Assuming reportId is sent in the body
 
@@ -463,6 +462,10 @@ exports.profileImageUpload = async (req, res) => {
   } catch (error) {
     console.error("Error uploading profile image:", error);
     res.status(500).json({ message: "Error uploading profile image", error });
+  } finally {
+    if (req.file && req.file.path) {
+      fs.unlinkSync(req.file.path); // Delete the file from 'uploads' after processing
+    }
   }
 };
 
