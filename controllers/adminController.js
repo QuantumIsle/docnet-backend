@@ -1,10 +1,12 @@
 const Doctor = require("../model/doctorModel");
 const Patient = require("../model/patientModel");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
-  console.log("Login attempt:", req.body);
+  const { formData } = req.body;
+  const { email, password } = formData;
+  console.log(formData);
 
   try {
     // Get admin credentials from environment variables
@@ -13,11 +15,22 @@ exports.login = async (req, res) => {
 
     // Check if provided credentials match the admin credentials
     const isMatch = email === adminEmail && password === adminPassword;
-    console.log("Credentials match:", isMatch);
 
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
+    // Generate access and refresh tokens
+    const accessToken = jwt.sign({ id: email }, process.env.ACCESS_TOKEN, {
+      expiresIn: "3h",
+    });
+
+    // Set cookie with a consistent name "access_token"
+    res.cookie("access_token", accessToken, {
+      httpOnly: true,
+      secure: true,
+      maxAge: 3 * 60 * 60 * 1000, // 3 hours
+      sameSite: "Strict",
+    });
 
     res.status(200).json({
       message: "Login successful",

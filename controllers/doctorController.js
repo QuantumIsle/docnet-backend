@@ -110,14 +110,14 @@ exports.register = async (req, res) => {
       );
 
       // Set cookies for accessToken and refreshToken
-      res.cookie("access_Token", accessToken, {
+      res.cookie("access_token", accessToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 2 * 60 * 60 * 1000, // 2 hours
         sameSite: "Strict",
       });
 
-      res.cookie("refresh_Token", refreshToken, {
+      res.cookie("refresh_token", refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
