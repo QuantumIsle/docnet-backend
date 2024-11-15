@@ -16,9 +16,15 @@ const DoctorSchema = new Schema(
       type: String,
       required: true,
     },
-    imageUrl: {
-      type: String,
-      required: false,
+    image: {
+      url: {
+        type: String,
+        required: false,
+      },
+      publicId: {
+        type: String,
+        required: false,
+      },
     },
     country: {
       type: String,

@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Patient = require("../model/patientModel");
+const Cloudinary = require("../config/cloudinarySetup");
 // Registers a new patient
 exports.register = async (req, res) => {
   const {
@@ -431,7 +432,10 @@ exports.profileImageUpload = async (req, res) => {
     if (!patient) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-
+    if (patient.image.publicId) {
+      console.log("deleting");
+      await Cloudinary.deleteImage(patient.image.publicId);
+    }
     if (!fileName) {
       return res.status(400).json({ message: "File name is required" });
     }
@@ -440,19 +444,11 @@ exports.profileImageUpload = async (req, res) => {
     if (!file || file.length === 0) {
       return res.status(400).json({ message: "No file uploaded" });
     }
+    let profileImageLink = "";
+    const result = await Cloudinary.uploadImage(file.path, userId);
 
-    const authClient = await authorize();
-    const folderId = await getOrCreateFolder(authClient, userId);
-
-    const { originalname, path } = file;
-    console.log(`File received: ${originalname}`);
-
-    const fileId = await uploadFile(authClient, path, fileName, folderId);
-    await setFilePublic(authClient, fileId);
-    const profileImageLink = await getShareableLink(authClient, fileId);
-    console.log(`File link: ${profileImageLink}`);
-    patient.imgUrl = profileImageLink;
-
+    patient.image.url = result.autoCropUrl;
+    patient.image.publicId = result.uploadResult.public_id;
     await patient.save();
 
     res.status(200).json({

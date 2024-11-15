@@ -17,9 +17,15 @@ const PatientSchema = new Schema(
       type: String,
       required: true,
     },
-    imgUrl: {
-      type: String,
-      required: false,
+    image: {
+      url: {
+        type: String,
+        required: false,
+      },
+      publicId: {
+        type: String,
+        required: false,
+      },
     },
     dateOfBirth: {
       type: Date,
