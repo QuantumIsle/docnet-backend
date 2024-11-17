@@ -3,12 +3,11 @@ const { gql } = require("apollo-server-express");
 const typeDefs = gql`
   scalar Date
 
-  # Doctor Type Definition
   type Doctor {
     id: ID!
     firstName: String!
     lastName: String!
-    imageUrl: String
+    image: image
     dateOfBirth: Date!
     gender: String!
     email: String!
@@ -32,7 +31,10 @@ const typeDefs = gql`
     createdAt: Date!
     updatedAt: Date!
   }
-
+  type image {
+    url: String!
+    publicId: ID!
+  }
   type Certificates {
     certificateName: String
     certificateDescription: String

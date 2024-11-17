@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Doctor = require("../model/doctorModel");
 const Patient = require("../model/patientModel");
+const Cloudinary = require("../config/cloudinarySetup");
 
 exports.login = async (req, res) => {
   const { email, password } = req.body;
@@ -557,6 +558,7 @@ exports.profileImageUpload = async (req, res) => {
   const { fileName } = req.body;
   const userId = req.user;
 
+  
   console.log("User ID:", req.user);
   console.log("Request Body:", req.body);
 
@@ -566,7 +568,10 @@ exports.profileImageUpload = async (req, res) => {
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-
+    if (doctor.image.publicId) {
+      console.log("deleting");
+      await Cloudinary.deleteImage(doctor.image.publicId);
+    }
     if (!fileName) {
       return res.status(400).json({ message: "File name is required" });
     }
@@ -576,21 +581,12 @@ exports.profileImageUpload = async (req, res) => {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const authClient = await authorize();
-    const folderId = await getOrCreateFolder(authClient, userId);
+    let profileImageLink = "";
+    const result = await Cloudinary.uploadImage(files[0].path, userId);
 
-    const { originalname, path } = files[0];
-    console.log(`File received: ${originalname}`);
-
-    // Upload file and get its ID and shareable link
-    const fileId = await uploadFile(authClient, path, fileName, folderId);
-    await setFilePublic(authClient, fileId);
-    const profileImageLink = await getShareableLink(authClient, fileId);
-
-    // Set the profile image link in the doctor document
-    doctor.imageUrl = profileImageLink;
-
-    // Save the updated doctor document
+    doctor.image.url = result.autoCropUrl;
+    doctor.image.publicId = result.uploadResult.public_id;
+    
     await doctor.save();
 
     res.status(200).json({
