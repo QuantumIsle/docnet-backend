@@ -64,7 +64,7 @@ exports.register = async (req, res) => {
       message: "Login successful",
     });
   } catch (error) {
-    res.status(500).json({ message: error });
+    res.status(500).json({ message: error.message });
   }
 };
 
@@ -403,7 +403,6 @@ exports.profileImageUpload = async (req, res) => {
   console.log("Request Body:", req.body);
 
   try {
-    
     const patient = await Patient.findById(userId);
     if (!patient) {
       return res.status(404).json({ message: "Doctor not found" });
@@ -424,15 +423,12 @@ exports.profileImageUpload = async (req, res) => {
     const { originalname, path } = files[0];
     console.log(`File received: ${originalname}`);
 
-   
     const fileId = await uploadFile(authClient, path, fileName, folderId);
     await setFilePublic(authClient, fileId);
     const profileImageLink = await getShareableLink(authClient, fileId);
 
-   
     patient.imgUrl = profileImageLink;
 
-   
     await patient.save();
 
     res.status(200).json({
@@ -453,6 +449,7 @@ exports.profileImageUpload = async (req, res) => {
 exports.uploadMiddleware = upload.single("file"); // 'file' is the field name expected in the form data
 
 const Review = require("../model/review");
+const { json } = require("express");
 
 exports.addReview = async (req, res) => {
   const { doctor, rating, comment } = req.body;
