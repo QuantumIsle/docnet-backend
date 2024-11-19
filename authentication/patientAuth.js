@@ -3,7 +3,6 @@ require("dotenv").config();
 
 const authenticateToken = (req, res, next) => {
   const token = req.cookies.access_token; // Now matches the name used in login
-  console.log("Token is:", token);
 
   if (!token) {
     return res

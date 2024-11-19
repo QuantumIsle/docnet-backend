@@ -64,7 +64,7 @@ const AppointmentSchema = new Schema(
 
 // Function to generate a random alphanumeric 5-character string
 AppointmentSchema.statics.generateUniqueAppointmentNumber = async function () {
-  const characters = "0123456789abcdefghijklmnopqrstuvwxyz";
+  const characters = "0123456789";
   let appointmentNumber;
   let isUnique = false;
 

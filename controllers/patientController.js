@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Patient = require("../model/patientModel");
+const Cloudinary = require("../config/cloudinarySetup");
 // Registers a new patient
 exports.register = async (req, res) => {
   const {
@@ -260,7 +261,32 @@ async function authorize() {
 
   return jwtClient;
 }
+// A Function to check if a folder exists for the doctor, and create it if it doesn't
+async function getOrCreateFolder(authClient, userId) {
+  const drive = google.drive({ version: "v3", auth: authClient });
 
+  const folderList = await drive.files.list({
+    q: `mimeType='application/vnd.google-apps.folder' and name='${userId}' and trashed=false`,
+    fields: "files(id, name)",
+  });
+
+  if (folderList.data.files.length > 0) {
+    return folderList.data.files[0].id;
+  }
+
+  const folderMetadata = {
+    name: userId,
+    mimeType: "application/vnd.google-apps.folder",
+    parents: ["1wAobbjcMFobmXRpaInTc20o19NJZVJz1"],
+  };
+
+  const folder = await drive.files.create({
+    resource: folderMetadata,
+    fields: "id",
+  });
+
+  return folder.data.id;
+}
 // A Function that will upload the desired file to google drive folder
 async function uploadFile(authClient, filePath, fileName) {
   return new Promise((resolve, reject) => {
@@ -338,7 +364,6 @@ const Report = require("./../model/reportsModel");
 
 exports.reportUpload = async (req, res) => {
   try {
-    // Extract the user (doctor or patient) and reportId from the request
     const userId = req.user; // Assuming the user info comes from middleware
     const { reportId } = req.body; // Assuming reportId is sent in the body
 
@@ -407,28 +432,23 @@ exports.profileImageUpload = async (req, res) => {
     if (!patient) {
       return res.status(404).json({ message: "Doctor not found" });
     }
-
+    if (patient.image.publicId) {
+      console.log("deleting");
+      await Cloudinary.deleteImage(patient.image.publicId);
+    }
     if (!fileName) {
       return res.status(400).json({ message: "File name is required" });
     }
 
-    const files = req.files;
-    if (!files || files.length === 0) {
+    const file = req.file;
+    if (!file || file.length === 0) {
       return res.status(400).json({ message: "No file uploaded" });
     }
+    let profileImageLink = "";
+    const result = await Cloudinary.uploadImage(file.path, userId);
 
-    const authClient = await authorize();
-    const folderId = await getOrCreateFolder(authClient, userId);
-
-    const { originalname, path } = files[0];
-    console.log(`File received: ${originalname}`);
-
-    const fileId = await uploadFile(authClient, path, fileName, folderId);
-    await setFilePublic(authClient, fileId);
-    const profileImageLink = await getShareableLink(authClient, fileId);
-
-    patient.imgUrl = profileImageLink;
-
+    patient.image.url = result.autoCropUrl;
+    patient.image.publicId = result.uploadResult.public_id;
     await patient.save();
 
     res.status(200).json({
@@ -439,8 +459,8 @@ exports.profileImageUpload = async (req, res) => {
     console.error("Error uploading profile image:", error);
     res.status(500).json({ message: "Error uploading profile image", error });
   } finally {
-    if (req.files) {
-      req.files.forEach((file) => fs.unlinkSync(file.path));
+    if (req.file && req.file.path) {
+      fs.unlinkSync(req.file.path); // Delete the file from 'uploads' after processing
     }
   }
 };

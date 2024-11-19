@@ -3,6 +3,10 @@ const { gql } = require("apollo-server-express");
 const typeDefs = gql`
   scalar Date
 
+  type image {
+    url: String!
+    publicId: ID!
+  }
   type Patient {
     id: ID!
     firstName: String!
@@ -17,7 +21,7 @@ const typeDefs = gql`
     weight: Float
     height: Float
     bloodType: String
-    imgUrl: String
+    image: image
     timeZone: String
     country: String
     contactNumber: String
