@@ -32,8 +32,8 @@ const typeDefs = gql`
     updatedAt: Date!
   }
   type image {
-    url: String!
-    publicId: ID!
+    url: String
+    publicId: ID
   }
   type Certificates {
     certificateName: String

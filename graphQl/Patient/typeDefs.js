@@ -4,8 +4,8 @@ const typeDefs = gql`
   scalar Date
 
   type image {
-    url: String!
-    publicId: ID!
+    url: String
+    publicId: ID
   }
   type Patient {
     id: ID!
