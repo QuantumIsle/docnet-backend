@@ -6,7 +6,6 @@ const adminController = require("../controllers/adminController");
 router.post("/login", adminController.login);
 router.post("/requestCertificates", adminController.requestCertificates);
 
-
 router.post(
   "/validateCertificates",
   adminController.acceptOrRejectCertificates
@@ -15,5 +14,7 @@ router.post(
 router.post("/validateDoctor", adminController.acceptOrRejectDoctor);
 
 router.post("/validatePatient", adminController.acceptOrRejectPatient);
+
+router.post("/deactivateDoctor", adminController.deactivateDoctor);
 
 module.exports = router;

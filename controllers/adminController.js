@@ -124,6 +124,28 @@ exports.acceptOrRejectDoctor = async (req, res) => {
   }
 };
 
+exports.deactivateDoctor = async (req, res) => {
+  const { doctorId } = req.body;
+  try {
+    const doctor = await Doctor.findById(doctorId);
+  
+    if (!doctor) {
+      return res.status(404).json({ message: "Doctor not found" });
+    }
+
+    doctor.verified = "0";
+
+    await doctor.save();
+    res.status(200).json({
+      message: "Doctor deactivated",
+      doctor,
+    });
+  } catch (error) {
+    console.error("Error updating doctor verification status:", error.message);
+    res.status(500).json({ message: "Error updating verification status" });
+  }
+};
+
 exports.acceptOrRejectPatient = async (req, res) => {
   const { patientId, accept } = req.body;
 
