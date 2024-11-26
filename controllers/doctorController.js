@@ -14,7 +14,7 @@ exports.login = async (req, res) => {
 
     // If doctor is not found, return an error
     if (!doctor) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid email" });
     }
 
     // Compare the provided password with the stored hashed password
@@ -23,7 +23,7 @@ exports.login = async (req, res) => {
 
     // If passwords don't match, return an error
     if (!isMatch) {
-      return res.status(400).json({ message: "Invalid email or password" });
+      return res.status(400).json({ message: "Invalid password" });
     }
 
     // Generate access and refresh tokens
@@ -210,21 +210,21 @@ exports.authMiddleware = async (req, res) => {
 
     // Generate a new access token (valid for 2 hours)
     const newAccessToken = jwt.sign(
-      { id: patient._id, email: patient.email },
+      { id: doctor._id, email: doctor.email },
       process.env.ACCESS_TOKEN,
       { expiresIn: "2h" }
     );
 
     // Optionally generate a new refresh token (valid for 7 days)
     const newRefreshToken = jwt.sign(
-      { id: patient._id, email: patient.email },
+      { id: doctor._id, email: doctor.email },
       process.env.REFRESH_TOKEN,
       { expiresIn: "7d" }
     );
 
     // Update the patient's refresh token in the database
     doctor.refreshToken = newRefreshToken;
-    await patient.save();
+    await doctor.save();
 
     // Set new access and refresh tokens in cookies
     res.cookie("access_token", newAccessToken, {
@@ -558,7 +558,6 @@ exports.profileImageUpload = async (req, res) => {
   const { fileName } = req.body;
   const userId = req.user;
 
-  
   console.log("User ID:", req.user);
   console.log("Request Body:", req.body);
 
@@ -586,7 +585,7 @@ exports.profileImageUpload = async (req, res) => {
 
     doctor.image.url = result.autoCropUrl;
     doctor.image.publicId = result.uploadResult.public_id;
-    
+
     await doctor.save();
 
     res.status(200).json({
