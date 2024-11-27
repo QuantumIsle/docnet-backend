@@ -81,6 +81,7 @@ exports.register = async (req, res) => {
     phoneNumber,
     country,
   } = req.body;
+ 
 
   try {
     // Create a new patient using the Patient model
@@ -131,7 +132,7 @@ exports.register = async (req, res) => {
       });
     }
   } catch (error) {
-    console.log(error);
+    console.log(error.message);
 
     res.status(500).json({
       message: "Server error, unable to register doctor",
@@ -558,7 +559,6 @@ exports.profileImageUpload = async (req, res) => {
   const { fileName } = req.body;
   const userId = req.user;
 
-  
   console.log("User ID:", req.user);
   console.log("Request Body:", req.body);
 
@@ -586,7 +586,7 @@ exports.profileImageUpload = async (req, res) => {
 
     doctor.image.url = result.autoCropUrl;
     doctor.image.publicId = result.uploadResult.public_id;
-    
+
     await doctor.save();
 
     res.status(200).json({
