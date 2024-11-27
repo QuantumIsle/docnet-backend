@@ -65,6 +65,8 @@ exports.register = async (req, res) => {
       message: "Login successful",
     });
   } catch (error) {
+    console.log(error);
+
     res.status(500).json({ message: error.message });
   }
 };
@@ -469,7 +471,6 @@ exports.profileImageUpload = async (req, res) => {
 exports.uploadMiddleware = upload.single("file"); // 'file' is the field name expected in the form data
 
 const Review = require("../model/review");
-const { json } = require("express");
 
 exports.addReview = async (req, res) => {
   const { doctor, rating, comment } = req.body;
