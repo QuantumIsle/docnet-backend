@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const patientController = require("../controllers/patientController");
+const emailController = require("../controllers/emailController");
 const auth = require("../authentication/patientAuth");
 // Register route
 router.post("/register", patientController.register);
@@ -24,5 +25,6 @@ router.post(
   patientController.profileImageUpload
 );
 router.post("/addReview", auth, patientController.addReview);
+router.post("/contact-us", emailController.sendPatientContactusEmail);
 
 module.exports = router;
