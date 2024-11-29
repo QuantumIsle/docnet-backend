@@ -121,7 +121,7 @@ Thank you for your ongoing service with DocnetAI.
 Best regards,
 DocnetAI Support`;
 
-  return sendEmail(to, subject, text);
+return sendEmail(to, subject, text);
 };
 
 /**
@@ -135,7 +135,7 @@ DocnetAI Support`;
 const sendPatientContactusEmail = async (req, res) => {
   const { name, email, message } = req.body;
   const to = "mihanfernando23@gmail.com";
-  const subject = "Patient Contact-us Submission";
+  const subject = "NO REPLY";
   const text = `You have a new message from a Patient:
 
 Name: ${name}
@@ -146,7 +146,7 @@ Message:
 ${message}
 
 Best regards,
-DocnetAI Pium Mahatthaya`;
+DocnetAI Support`;
 
   res.status(200).json({ message: "Support Mail from Patient Sent Successfully!" });
   return sendEmail(to, subject, text);
@@ -166,7 +166,7 @@ ${message}
 "
 
 Best regards,
-DocnetAI Pium Mahatthaya`;
+DocnetAI Support`;
 
   res.status(200).json({ message: "Support Mail from Doctor Sent Successfully!" });
   return sendEmail(to, subject, text);
