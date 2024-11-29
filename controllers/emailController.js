@@ -151,7 +151,7 @@ Thank you for your ongoing service with DocnetAI.
 Best regards,
 DocnetAI Support`;
 
-  return sendEmail(to, subject, text);
+return sendEmail(to, subject, text);
 };
 
 /**
@@ -161,6 +161,48 @@ DocnetAI Support`;
  * @param {string} text - The content of the email
  * @returns {Promise} - A promise indicating the success/failure of the email sending operation
  */
+
+const sendPatientContactusEmail = async (req, res) => {
+  const { name, email, message } = req.body;
+  const to = "mihanfernando23@gmail.com";
+  const subject = "NO REPLY";
+  const text = `You have a new message from a Patient:
+
+Name: ${name}
+Email: ${email}
+
+Message:
+
+${message}
+
+Best regards,
+DocnetAI Support`;
+
+  res.status(200).json({ message: "Support Mail from Patient Sent Successfully!" });
+  return sendEmail(to, subject, text);
+}
+const sendDoctorContactusEmail = async (req, res) => {
+  const { name, email, message } = req.body;
+  const to = "mihanfernando23@gmail.com";
+  const subject = "Doctor Contact-us Submission";
+  const text = `You have a new message from a Doctor:
+
+Name: Dr. ${name}
+Email: ${email}
+
+Message:"
+
+${message}
+"
+
+Best regards,
+DocnetAI Support`;
+
+  res.status(200).json({ message: "Support Mail from Doctor Sent Successfully!" });
+  return sendEmail(to, subject, text);
+}
+
+
 const sendEmail = async (to, subject, text) => {
   const mailOptions = {
     from: '"DocnetAI Support" <support@docnetai.com>',
@@ -184,4 +226,6 @@ module.exports = {
   sendDoctorUpcomingAppointmentEmail,
   sendPatientCompletedAppointmentEmail,
   sendDoctorCompletedAppointmentEmail,
+  sendPatientContactusEmail,
+  sendDoctorContactusEmail
 };
