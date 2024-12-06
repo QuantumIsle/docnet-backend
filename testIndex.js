@@ -69,6 +69,7 @@ app.use("/appointments", require("./routes/appointmentRoutes"));
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
 app.use("/admins", require("./routes/adminRoutes"));
+app.use("/payments", require("./routes/paymentRoutes"));
 
 // app.use(auth);
 const Doctor = require("./model/doctorModel");
