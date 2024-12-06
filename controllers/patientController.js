@@ -484,13 +484,12 @@ exports.addReview = async (req, res) => {
 
     // Create the review data object
     const reviewData = {
-      doctor,
-      user,
+      doctorId: doctor,
+      patientId: user,
       rating,
       comment,
     };
 
-    // Call the addReview method from the Review model
     const newReview = await Review.addReview(reviewData);
 
     res.status(201).json({ message: "Review added successfully", newReview });

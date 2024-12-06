@@ -77,7 +77,6 @@ const Patient = require("./model/patientModel");
 app.get("/signature", async (req, res) => {
   const { id } = req.query; // Get the appointmentId from query parameters
 
-
   try {
     // Get the user ID from req.user (populated by your auth middleware)
     const userId = req.user;
