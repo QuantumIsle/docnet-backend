@@ -474,7 +474,9 @@ const Review = require("../model/review");
 
 exports.addReview = async (req, res) => {
   const { doctor, rating, comment } = req.body;
+  console.log("🚀 ~ exports.addReview= ~ body:", req.body);
   const user = req.user;
+  console.log("🚀 ~ exports.addReview= ~ user:", user);
 
   try {
     // Check if all necessary fields are provided
@@ -490,7 +492,9 @@ exports.addReview = async (req, res) => {
       comment,
     };
 
+    console.log("before review");
     const newReview = await Review.addReview(reviewData);
+    console.log("🚀 ~ exports.addReview= ~ newReview:", newReview);
 
     res.status(201).json({ message: "Review added successfully", newReview });
   } catch (error) {
