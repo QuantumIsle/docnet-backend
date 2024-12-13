@@ -39,11 +39,11 @@ const resolvers = {
             path: "appointments",
             populate: [
               {
-                path: "doctorId", // Populate doctor reference
+                path: "doctorId",
               },
               {
-                path: "outcome.reportRequest", // Populate reportRequest within outcome
-                model: "Report", // Ensure the model is specified
+                path: "outcome.reportRequest", 
+                model: "Report", 
               },
             ],
           })

@@ -423,46 +423,48 @@ exports.reportUpload = async (req, res) => {
   }
 };
 exports.profileImageUpload = async (req, res) => {
-  const { fileName } = req.body;
   const userId = req.user;
 
-  console.log("User ID:", req.user);
-  console.log("Request Body:", req.body);
-
   try {
+    // Fetch the patient by ID
     const patient = await Patient.findById(userId);
     if (!patient) {
-      return res.status(404).json({ message: "Doctor not found" });
+      return res.status(404).json({ message: "Patient not found" });
     }
-    if (patient.image.publicId) {
-      console.log("deleting");
+
+    // Delete the existing image if it exists
+    if (patient.image?.publicId) {
       await Cloudinary.deleteImage(patient.image.publicId);
     }
-    if (!fileName) {
-      return res.status(400).json({ message: "File name is required" });
-    }
 
+    // Validate the uploaded file
     const file = req.file;
-    if (!file || file.length === 0) {
+    if (!file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
-    let profileImageLink = "";
+
     const result = await Cloudinary.uploadImage(file.path, userId);
 
-    patient.image.url = result.autoCropUrl;
-    patient.image.publicId = result.uploadResult.public_id;
+    // Update patient image details
+    patient.image = {
+      url: result.uploadResult.secure_url,
+      publicId: result.uploadResult.public_id,
+    };
     await patient.save();
 
+    // Respond with the new image URL
     res.status(200).json({
       message: "Profile image uploaded successfully",
-      link: profileImageLink,
+      link: patient.image.url,
     });
   } catch (error) {
     console.error("Error uploading profile image:", error);
     res.status(500).json({ message: "Error uploading profile image", error });
   } finally {
-    if (req.file && req.file.path) {
-      fs.unlinkSync(req.file.path); // Delete the file from 'uploads' after processing
+    // Clean up the uploaded file
+    if (req.file?.path) {
+      console.log("Deleting temporary file:", req.file.path);
+      fs.unlinkSync(req.file.path);
     }
   }
 };

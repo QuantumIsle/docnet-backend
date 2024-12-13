@@ -81,7 +81,6 @@ exports.register = async (req, res) => {
     phoneNumber,
     country,
   } = req.body;
- 
 
   try {
     // Create a new patient using the Patient model
@@ -559,47 +558,44 @@ exports.profileImageUpload = async (req, res) => {
   const { fileName } = req.body;
   const userId = req.user;
 
-  console.log("User ID:", req.user);
-  console.log("Request Body:", req.body);
-
   try {
     // Find doctor by ID
     const doctor = await Doctor.findById(userId);
     if (!doctor) {
       return res.status(404).json({ message: "Doctor not found" });
     }
+
+    // Delete existing image if it exists
     if (doctor.image.publicId) {
-      console.log("deleting");
       await Cloudinary.deleteImage(doctor.image.publicId);
     }
-    if (!fileName) {
-      return res.status(400).json({ message: "File name is required" });
-    }
 
+    // Validate uploaded file
     const files = req.files;
     if (!files || files.length === 0) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    let profileImageLink = "";
+    // Upload new image
+
     const result = await Cloudinary.uploadImage(files[0].path, userId);
 
-    doctor.image.url = result.autoCropUrl;
+    // Update doctor profile
+    doctor.image.url = result.uploadResult.secure_url; // Fallback to secure_url
     doctor.image.publicId = result.uploadResult.public_id;
-
     await doctor.save();
 
+    // Clean up temporary files
+    req.files.forEach((file) => fs.unlinkSync(file.path));
+
+    // Respond to client
     res.status(200).json({
       message: "Profile image uploaded successfully",
-      link: profileImageLink,
+      link: doctor.image.url,
     });
   } catch (error) {
     console.error("Error uploading profile image:", error);
     res.status(500).json({ message: "Error uploading profile image", error });
-  } finally {
-    if (req.files) {
-      req.files.forEach((file) => fs.unlinkSync(file.path));
-    }
   }
 };
 
