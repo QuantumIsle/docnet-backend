@@ -116,8 +116,8 @@ const nodemailer = require("nodemailer"); // Make sure nodemailer is installed a
 const transporter = nodemailer.createTransport({
   service: "gmail", // You can use other email services like 'Outlook', 'Yahoo', etc.
   auth: {
-    user: "mihanfernando23@gmail.com", // Replace with your email
-    pass: "buyt jvvq vbdf baag", // Replace with your email password (or use App Passwords)
+    user: "support@docnet.ai", // Replace with your email
+    pass: "uial rxjq wcfm yijl", // Replace with your email password (or use App Passwords)
   },
 });
 
@@ -192,7 +192,6 @@ www.docnetai.com
 exports.changePassword = async (req, res) => {
   const { email, userType, newPassword } = req.body;
 
-
   try {
     // Check if the user is a doctor or patient based on userType
     let user;
@@ -201,7 +200,6 @@ exports.changePassword = async (req, res) => {
     } else if (userType === "Patient") {
       user = await Patient.findOne({ email });
     }
-
 
     // If user not found, return an error
     if (!user) {
