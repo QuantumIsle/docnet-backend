@@ -279,7 +279,7 @@ async function getOrCreateFolder(authClient, userId) {
   const folderMetadata = {
     name: userId,
     mimeType: "application/vnd.google-apps.folder",
-    parents: ["1wAobbjcMFobmXRpaInTc20o19NJZVJz1"],
+    parents: ["1VZ6Pg2l_jiECB49ZfA11vgTjE1yUqRwz"],
   };
 
   const folder = await drive.files.create({
@@ -296,7 +296,7 @@ async function uploadFile(authClient, filePath, fileName) {
 
     const fileMetaData = {
       name: fileName, // Set file name from the request
-      parents: ["1wAobbjcMFobmXRpaInTc20o19NJZVJz1"], // Folder ID where the file will be uploaded
+      parents: ["1VZ6Pg2l_jiECB49ZfA11vgTjE1yUqRwz"], // Folder ID where the file will be uploaded
     };
 
     const media = {
@@ -413,7 +413,7 @@ exports.reportUpload = async (req, res) => {
       link: shareableLink,
     });
   } catch (error) {
-    console.error("Error uploading file and updating report:", error);
+    console.error("Error uploading file and updating report:", error.message);
     res.status(500).json({ message: "Error uploading file", error });
   } finally {
     // Clean up the uploaded file

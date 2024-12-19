@@ -3,8 +3,8 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   service: "gmail", // You can use other email services like 'Outlook', 'Yahoo', etc.
   auth: {
-    user: "mihanfernando23@gmail.com", // Replace with your email
-    pass: "buyt jvvq vbdf baag", // Replace with your email password (or use App Passwords)
+    user: "admin@docnet.ai", // Replace with your email
+    pass: "uial rxjq wcfm yijl", // Replace with your email password (or use App Passwords)
   },
 });
 
@@ -151,7 +151,7 @@ Thank you for your ongoing service with DocnetAI.
 Best regards,
 DocnetAI Support`;
 
-return sendEmail(to, subject, text);
+  return sendEmail(to, subject, text);
 };
 
 /**
@@ -178,9 +178,11 @@ ${message}
 Best regards,
 DocnetAI Support`;
 
-  res.status(200).json({ message: "Support Mail from Patient Sent Successfully!" });
+  res
+    .status(200)
+    .json({ message: "Support Mail from Patient Sent Successfully!" });
   return sendEmail(to, subject, text);
-}
+};
 const sendDoctorContactusEmail = async (req, res) => {
   const { name, email, message } = req.body;
   const to = "mihanfernando23@gmail.com";
@@ -198,10 +200,11 @@ ${message}
 Best regards,
 DocnetAI Support`;
 
-  res.status(200).json({ message: "Support Mail from Doctor Sent Successfully!" });
+  res
+    .status(200)
+    .json({ message: "Support Mail from Doctor Sent Successfully!" });
   return sendEmail(to, subject, text);
-}
-
+};
 
 const sendEmail = async (to, subject, text) => {
   const mailOptions = {
@@ -227,5 +230,5 @@ module.exports = {
   sendPatientCompletedAppointmentEmail,
   sendDoctorCompletedAppointmentEmail,
   sendPatientContactusEmail,
-  sendDoctorContactusEmail
+  sendDoctorContactusEmail,
 };
