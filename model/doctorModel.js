@@ -70,7 +70,7 @@ const DoctorSchema = new Schema(
         },
         valid: {
           type: String,
-          enum: [ "0", "1"],
+          enum: ["0", "1"],
           required: true,
           default: "0",
         },

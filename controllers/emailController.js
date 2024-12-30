@@ -208,7 +208,7 @@ DocnetAI Support`;
 
 const sendEmail = async (to, subject, text) => {
   const mailOptions = {
-    from: '"DocnetAI Support" <support@docnetai.com>',
+    from: '"DocnetAI Support" <appointment@docnetai.com>',
     to,
     subject,
     text,
