@@ -144,7 +144,7 @@ const DoctorSchema = new Schema(
       },
     },
     reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }],
-    fee: { type: Number },
+    fee: { type: Number,default:0 },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt timestamps
