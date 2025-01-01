@@ -30,6 +30,7 @@ const typeDefs = gql`
     reports: [Report]
     createdAt: Date!
     updatedAt: Date!
+    fee: Int
   }
   type image {
     url: String
@@ -80,6 +81,7 @@ const typeDefs = gql`
       professionStartedYear: Int
       languagesSpoken: String
       workingHours: WorkingHoursInput
+      fee: Int
     ): Doctor
   }
 

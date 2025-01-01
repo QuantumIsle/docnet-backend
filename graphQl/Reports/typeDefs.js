@@ -11,7 +11,7 @@ const typeDefs = gql`
     review: String
     fileUrl: String
     status: String
-    createdAt: Date!
+    createdAt: Date
     updatedAt: Date
   }
 

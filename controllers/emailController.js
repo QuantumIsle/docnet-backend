@@ -3,8 +3,8 @@ const nodemailer = require("nodemailer");
 const transporter = nodemailer.createTransport({
   service: "gmail", // You can use other email services like 'Outlook', 'Yahoo', etc.
   auth: {
-    user: "mihanfernando23@gmail.com", // Replace with your email
-    pass: "buyt jvvq vbdf baag", // Replace with your email password (or use App Passwords)
+    user: "admin@docnet.ai", // Replace with your email
+    pass: "uial rxjq wcfm yijl", // Replace with your email password (or use App Passwords)
   },
 });
 
@@ -16,8 +16,14 @@ const transporter = nodemailer.createTransport({
  * @param {string} reason - The reason for the appointment
  * @returns {Promise}
  */
-const sendPatientUpcomingAppointmentEmail = async (to, doctorName, appointmentDate, reason) => {
-  const subject = "Confirmation of Your Upcoming Appointment with Dr. " + doctorName;
+const sendPatientUpcomingAppointmentEmail = async (
+  to,
+  doctorName,
+  appointmentDate,
+  reason
+) => {
+  const subject =
+    "Confirmation of Your Upcoming Appointment with Dr. " + doctorName;
   const text = `Dear Patient,
 
 We are pleased to confirm your upcoming appointment with Dr. ${doctorName}. Below are the appointment details:
@@ -43,7 +49,12 @@ DocnetAI Support`;
  * @param {string} reason - The reason for the appointment
  * @returns {Promise}
  */
-const sendDoctorUpcomingAppointmentEmail = async (to, patientName, appointmentDate, reason) => {
+const sendDoctorUpcomingAppointmentEmail = async (
+  to,
+  patientName,
+  appointmentDate,
+  reason
+) => {
   const subject = "New Appointment Confirmed with Patient " + patientName;
   const text = `Dear Dr.,
 
@@ -72,8 +83,16 @@ DocnetAI Support`;
  * @param {string} reportRequest - Report type requested (if applicable)
  * @returns {Promise}
  */
-const sendPatientCompletedAppointmentEmail = async (to, doctorName, appointmentDate, diagnosis, prescriptions, reportRequest) => {
-  const subject = "Summary of Your Completed Appointment with Dr. " + doctorName;
+const sendPatientCompletedAppointmentEmail = async (
+  to,
+  doctorName,
+  appointmentDate,
+  diagnosis,
+  prescriptions,
+  reportRequest
+) => {
+  const subject =
+    "Summary of Your Completed Appointment with Dr. " + doctorName;
   const text = `Dear Patient,
 
 Below is the summary of your recent appointment with Dr. ${doctorName}:
@@ -82,9 +101,13 @@ Appointment Summary:
 - Doctor: Dr. ${doctorName}
 - Date: ${appointmentDate}
 - Diagnosis: ${diagnosis}
-- Prescriptions: ${prescriptions ? prescriptions : 'No prescriptions provided'}
+- Prescriptions: ${prescriptions ? prescriptions : "No prescriptions provided"}
 
-${reportRequest ? `A report has been requested: ${reportRequest}. You will be notified once it is ready.` : ''}
+${
+  reportRequest
+    ? `A report has been requested: ${reportRequest}. You will be notified once it is ready.`
+    : ""
+}
 
 Thank you for choosing DocnetAI for your healthcare needs.
 
@@ -104,7 +127,14 @@ DocnetAI Support`;
  * @param {string} reportRequest - Report type requested (if applicable)
  * @returns {Promise}
  */
-const sendDoctorCompletedAppointmentEmail = async (to, patientName, appointmentDate, diagnosis, prescriptions, reportRequest) => {
+const sendDoctorCompletedAppointmentEmail = async (
+  to,
+  patientName,
+  appointmentDate,
+  diagnosis,
+  prescriptions,
+  reportRequest
+) => {
   const subject = "Appointment with Patient " + patientName + " Completed";
   const text = `Dear Dr.,
 
@@ -113,15 +143,15 @@ The appointment with patient ${patientName} on ${appointmentDate} has been marke
 Appointment Summary:
 - Patient: ${patientName}
 - Diagnosis: ${diagnosis}
-- Prescriptions: ${prescriptions ? prescriptions : 'No prescriptions provided'}
-${reportRequest ? `Report Requested: ${reportRequest}` : ''}
+- Prescriptions: ${prescriptions ? prescriptions : "No prescriptions provided"}
+${reportRequest ? `Report Requested: ${reportRequest}` : ""}
 
 Thank you for your ongoing service with DocnetAI.
 
 Best regards,
 DocnetAI Support`;
 
-return sendEmail(to, subject, text);
+  return sendEmail(to, subject, text);
 };
 
 /**
@@ -148,9 +178,11 @@ ${message}
 Best regards,
 DocnetAI Support`;
 
-  res.status(200).json({ message: "Support Mail from Patient Sent Successfully!" });
+  res
+    .status(200)
+    .json({ message: "Support Mail from Patient Sent Successfully!" });
   return sendEmail(to, subject, text);
-}
+};
 const sendDoctorContactusEmail = async (req, res) => {
   const { name, email, message } = req.body;
   const to = "mihanfernando23@gmail.com";
@@ -168,14 +200,15 @@ ${message}
 Best regards,
 DocnetAI Support`;
 
-  res.status(200).json({ message: "Support Mail from Doctor Sent Successfully!" });
+  res
+    .status(200)
+    .json({ message: "Support Mail from Doctor Sent Successfully!" });
   return sendEmail(to, subject, text);
-}
-
+};
 
 const sendEmail = async (to, subject, text) => {
   const mailOptions = {
-    from: '"DocnetAI Support" <support@docnetai.com>',
+    from: '"DocnetAI Support" <appointment@docnetai.com>',
     to,
     subject,
     text,
@@ -197,5 +230,5 @@ module.exports = {
   sendPatientCompletedAppointmentEmail,
   sendDoctorCompletedAppointmentEmail,
   sendPatientContactusEmail,
-  sendDoctorContactusEmail
+  sendDoctorContactusEmail,
 };

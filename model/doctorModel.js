@@ -70,7 +70,7 @@ const DoctorSchema = new Schema(
         },
         valid: {
           type: String,
-          enum: [ "0", "1"],
+          enum: ["0", "1"],
           required: true,
           default: "0",
         },
@@ -143,7 +143,8 @@ const DoctorSchema = new Schema(
         required: false,
       },
     },
-    reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }], // Reference to Review model
+    reviews: [{ type: Schema.Types.ObjectId, ref: "Review" }],
+    fee: { type: Number,default:0 },
   },
   {
     timestamps: true, // Automatically add createdAt and updatedAt timestamps

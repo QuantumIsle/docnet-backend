@@ -37,9 +37,15 @@ const resolvers = {
         const patient = await Patient.findOne({ _id: id })
           .populate({
             path: "appointments",
-            populate: {
-              path: "doctorId", // Path to doctor reference in Appointment
-            },
+            populate: [
+              {
+                path: "doctorId",
+              },
+              {
+                path: "outcome.reportRequest", 
+                model: "Report", 
+              },
+            ],
           })
           .populate({
             path: "reviews",
@@ -53,11 +59,13 @@ const resolvers = {
               path: "doctorId",
             },
           });
+    
         return patient;
       } catch (error) {
         throw new Error(error.message);
       }
     },
+    
     getAllPatients: async () => {
       try {
         const patients = await Patient.find({})

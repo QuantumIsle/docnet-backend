@@ -22,8 +22,8 @@ const typeDefs = gql`
   }
 
   type Prescription {
-    medicine: String!
-    howToUse: String!
+    medicine: String
+    howToUse: String
   }
 
   type Outcome {
