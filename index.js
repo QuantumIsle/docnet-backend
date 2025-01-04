@@ -7,6 +7,8 @@ const passport = require("passport");
 const session = require("express-session");
 const jwt = require("jsonwebtoken");
 
+const paymentController = require("./controllers/paymentController");
+
 require("./config/passportSetup"); // Import Passport configuration
 
 require("dotenv").config();
@@ -44,6 +46,11 @@ app.use(cors(corsOptions));
 
 // Add cookie-parser middleware
 app.use(cookieParser());
+
+
+//Just need to keep it before making app.use bodyParser.json
+app.use("/payments/webhook", bodyParser.raw({ type: "application/json" }), paymentController.handleStripeWebhook);
+
 // Use body-parser to parse JSON bodies into JS objects
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
@@ -69,6 +76,7 @@ app.use("/appointments", require("./routes/appointmentRoutes"));
 app.use("/patients", require("./routes/patientRoutes"));
 app.use("/doctors", require("./routes/doctorRoutes"));
 app.use("/admins", require("./routes/adminRoutes"));
+app.use("/payments", require("./routes/paymentRoutes"));
 app.use(auth);
 
 const Doctor = require("./model/doctorModel");
