@@ -279,12 +279,15 @@ exports.cancelAppointment = async (req, res) => {
             return res.status(404).json({ message: "Appointment not found" });
         }
 
+        const doctor = await Doctor.findById(appointment.doctorId);
+        const patient = await Patient.findById(appointment.patientId);
+
         // Check if the cancellation is within the allowed time frame
-        const appointmentDate = new Date(appointment.date);
+        const appointmentDate = new Date(appointment.appointmentDate);
         const currentDate = new Date();
         const diffInDays =
             (appointmentDate - currentDate) / (1000 * 60 * 60 * 24);
-
+        console.log("diffInDays", diffInDays);
         if (diffInDays < 2) {
             return res
                 .status(400)
@@ -306,6 +309,7 @@ exports.cancelAppointment = async (req, res) => {
         const paymentId = appointment.paymentDetails.paymentId; // Assuming appointment has a reference to payment ID
         const refundResponse = await refundPayment(
             paymentId
+
         );
 
         if (!refundResponse.success) {
@@ -322,9 +326,20 @@ exports.cancelAppointment = async (req, res) => {
         appointment.paymentDetails.refundId = refundResponse.data.id; // Optional: Store refund details
         await appointment.save();
 
+        // Update the doctor and patient objects to include the new appointment
+        doctor.appointments = doctor.appointments.filter(
+            (id) => id.toString() !== appointmentId
+        );
+        patient.appointments = patient.appointments.filter(
+            (id) => id.toString() !== appointmentId
+        );
+
+        doctor.save();
+        patient.save();
+
         res.status(200).json({
             message: "Appointment cancelled and refund processed.",
-            refundResponse,
+            // refundResponse,
         });
     } catch (error) {
         console.error("Error cancelling appointment:", error);
