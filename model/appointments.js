@@ -3,95 +3,109 @@ const Schema = mongoose.Schema;
 
 // Define the schema for appointments
 const AppointmentSchema = new Schema(
-  {
-    doctorId: {
-      type: Schema.Types.ObjectId,
-      ref: "Doctor",
-      required: true,
-    },
-    patientId: {
-      type: Schema.Types.ObjectId,
-      ref: "Patient",
-      required: true,
-    },
-    appointmentNumber: {
-      type: String,
-      unique: true,
-    },
-    status: {
-      type: String,
-      enum: ["pending", "completed"],
-      default: "pending",
-      required: true,
-    },
-    outcome: {
-      diagnosis: {
-        type: String,
-      },
-      prescription: [
-        {
-          medicine: { type: String },
-          howToUse: { type: String },
+    {
+        doctorId: {
+            type: Schema.Types.ObjectId,
+            ref: "Doctor",
+            required: true,
         },
-      ],
-      reportRequest: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: "Report",
+        patientId: {
+            type: Schema.Types.ObjectId,
+            ref: "Patient",
+            required: true,
         },
-      ],
-      notes: {
-        type: String,
-      },
+        appointmentNumber: {
+            type: String,
+            unique: true,
+        },
+        status: {
+            type: String,
+            enum: ["pending", "completed", "cancelled"],
+            default: "pending",
+            required: true,
+        },
+        outcome: {
+            diagnosis: {
+                type: String,
+            },
+            prescription: [
+                {
+                    medicine: { type: String },
+                    howToUse: { type: String },
+                },
+            ],
+            reportRequest: [
+                {
+                    type: Schema.Types.ObjectId,
+                    ref: "Report",
+                },
+            ],
+            notes: {
+                type: String,
+            },
+        },
+        appointmentDate: {
+            type: Date,
+            required: true,
+        },
+        appointmentType: {
+            type: String,
+            default: "normal",
+            required: true,
+        },
+        paymentDetails: {
+            paymentId: {
+                type: String,
+                required: true,
+            },
+            // amount: {
+            //   type: Number,
+            //   required: true,
+            // },
+            refundId: {
+                type: String,
+                required: false,
+            },
+        },
+        completedAt: {
+            type: Date,
+        },
     },
-    appointmentDate: {
-      type: Date,
-      required: true,
-    },
-    appointmentType: {
-      type: String,
-      default: "normal",
-      required: true,
-    },
-    completedAt: {
-      type: Date,
-    },
-  },
-  {
-    timestamps: true,
-  }
+    {
+        timestamps: true,
+    }
 );
 
 // Function to generate a random alphanumeric 5-character string
 AppointmentSchema.statics.generateUniqueAppointmentNumber = async function () {
-  const characters = "0123456789";
-  let appointmentNumber;
-  let isUnique = false;
+    const characters = "0123456789";
+    let appointmentNumber;
+    let isUnique = false;
 
-  while (!isUnique) {
-    // Generate a random 5-character string
-    appointmentNumber = Array.from(
-      { length: 5 },
-      () => characters[Math.floor(Math.random() * characters.length)]
-    ).join("");
+    while (!isUnique) {
+        // Generate a random 5-character string
+        appointmentNumber = Array.from(
+            { length: 5 },
+            () => characters[Math.floor(Math.random() * characters.length)]
+        ).join("");
 
-    // Check if the generated number is unique
-    const existingAppointment = await this.findOne({ appointmentNumber });
-    if (!existingAppointment) {
-      isUnique = true; // If no appointment with this number exists, it's unique
+        // Check if the generated number is unique
+        const existingAppointment = await this.findOne({ appointmentNumber });
+        if (!existingAppointment) {
+            isUnique = true; // If no appointment with this number exists, it's unique
+        }
     }
-  }
 
-  return appointmentNumber;
+    return appointmentNumber;
 };
 
 // Pre-save middleware to generate a unique appointment number before saving
 AppointmentSchema.pre("save", async function (next) {
-  if (!this.appointmentNumber) {
-    this.appointmentNumber =
-      await this.constructor.generateUniqueAppointmentNumber();
-  }
-  next();
+    if (!this.appointmentNumber) {
+        this.appointmentNumber =
+            await this.constructor.generateUniqueAppointmentNumber();
+    }
+    next();
 });
 
 const Appointment = mongoose.model("Appointment", AppointmentSchema);

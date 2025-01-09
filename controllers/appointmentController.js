@@ -12,11 +12,12 @@ const {
     sendPatientCompletedAppointmentEmail,
     sendDoctorCompletedAppointmentEmail,
 } = require("./emailController");
+const { refundPayment } = require("./paymentController");
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
 exports.addUpcomingAppointment = async (
-    sessionId,  // Use them if needed
+    paymentIntentId, // Use them if needed
     status,
     appointmentDetails
 ) => {
@@ -46,11 +47,9 @@ exports.addUpcomingAppointment = async (
 
         // Ensure appointment date is valid and not in the past
         if (!date || date < new Date()) {
-            return res
-                .status(400)
-                .json({
-                    message: "Invalid or past appointment date and time.",
-                });
+            return res.status(400).json({
+                message: "Invalid or past appointment date and time.",
+            });
         }
 
         // Create a new upcoming appointment
@@ -58,6 +57,9 @@ exports.addUpcomingAppointment = async (
             doctorId: new mongoose.Types.ObjectId(docId), // Use new keyword here
             patientId: new mongoose.Types.ObjectId(patientId), // Use new keyword here
             appointmentDate: date,
+            paymentDetails: {
+                paymentId: paymentIntentId,
+            },
             // reason: req.body.reason || "",
             // notes: req.body.notes || "",
             reason: appointmentDetails.reason || "",
@@ -91,10 +93,10 @@ exports.addUpcomingAppointment = async (
 
         // Response commented out because this is not called as an API endpoint anymore
 
-                // res.status(201).json({
-                //   message: "Upcoming appointment added successfully.",
-                //   appointment: savedAppointment,
-                // });
+        // res.status(201).json({
+        //   message: "Upcoming appointment added successfully.",
+        //   appointment: savedAppointment,
+        // });
 
         console.log("Upcoming appointment added successfully.");
     } catch (error) {
@@ -266,3 +268,70 @@ exports.addCompletedAppointment = async (req, res) => {
         });
     }
 };
+
+exports.cancelAppointment = async (req, res) => {
+    try {
+        const { appointmentId } = req.body;
+
+        // Fetch appointment details from the database
+        const appointment = await Appointment.findById(appointmentId);
+        if (!appointment) {
+            return res.status(404).json({ message: "Appointment not found" });
+        }
+
+        // Check if the cancellation is within the allowed time frame
+        const appointmentDate = new Date(appointment.date);
+        const currentDate = new Date();
+        const diffInDays =
+            (appointmentDate - currentDate) / (1000 * 60 * 60 * 24);
+
+        if (diffInDays < 2) {
+            return res
+                .status(400)
+                .json({
+                    message:
+                        "Cancellations are only allowed 2 or more days before the appointment date.",
+                });
+        }
+
+        // Process refund
+        // const refund = await stripe.refunds.create({
+        //     payment_intent: appointment.paymentIntentId, // Stored during appointment creation
+        // });
+
+        // const paymentRefundResponse = await refundPayment(appointment.paymentIntentId);
+        // const refund = paymentRefundResponse.data;
+
+        // Step 2: Call the refundPayment function in PaymentController
+        const paymentId = appointment.paymentDetails.paymentId; // Assuming appointment has a reference to payment ID
+        const refundResponse = await refundPayment(
+            paymentId
+        );
+
+        if (!refundResponse.success) {
+            return res
+                .status(400)
+                .json({
+                    message: "Refund failed.",
+                    error: refundResponse.error,
+                });
+        }
+
+        // Update appointment status in the database
+        appointment.status = "cancelled";
+        appointment.paymentDetails.refundId = refundResponse.data.id; // Optional: Store refund details
+        await appointment.save();
+
+        res.status(200).json({
+            message: "Appointment cancelled and refund processed.",
+            refundResponse,
+        });
+    } catch (error) {
+        console.error("Error cancelling appointment:", error);
+        res.status(500).json({
+            message: "Internal server error from canceling appointment",
+        });
+    }
+};
+
+// module.exports = { cancelAppointment };

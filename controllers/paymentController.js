@@ -49,8 +49,8 @@ const createCheckoutSession = async (req, res) => {
                         currency: "usd",
                         product_data: {
                             // name: "Upcoming Appointment Booking",
-                            name :`Upcoming Appointment: ${requestData.doctorName} - ${requestData.selectedDate} - ${requestData.selectedTime}`,
-                            description: 'Confirm your appointment booking.',
+                            name: `Upcoming Appointment: ${requestData.doctorName} - ${requestData.selectedDate} - ${requestData.selectedTime}`,
+                            description: "Confirm your appointment booking.",
                         },
                         unit_amount: requestData.amount * 100,
                     },
@@ -67,14 +67,12 @@ const createCheckoutSession = async (req, res) => {
             },
         });
         res.status(200).json({ url: session.url });
-
     } catch (err) {
         console.log(err);
         console.log(stripeSecretKey);
         res.status(500).send({ message: "Internal server error" });
     }
 };
-
 
 const handleStripeWebhook = async (req, res) => {
     const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -91,18 +89,18 @@ const handleStripeWebhook = async (req, res) => {
             endpointSecret // Webhook secret
         );
         console.log("event created successfully");
-        
 
         switch (event.type) {
             case "checkout.session.completed": {
                 const session = event.data.object;
 
-                const appointmentDetails = session.metadata.appointmentDetails
+                const appointmentDetails = session.metadata.appointmentDetails;
+                const paymentIntentId = session.payment_intent;
 
                 if (session.payment_status === "paid") {
                     // Mark the payment as successful in your database
                     await addUpcomingAppointment(
-                        session.id,
+                        paymentIntentId,
                         "success",
                         appointmentDetails
                     );
@@ -130,8 +128,36 @@ const handleStripeWebhook = async (req, res) => {
     res.json({ received: true });
 };
 
+// const refundPayment = async (paymentIntentId) => {
+//     res.status(200).json({ message: "Payment refunded successfully", id: paymentIntentId });
+// }
+// try {
+//     const refund = await stripe.refunds.create({
+//         payment_intent: paymentIntentId,
+//     });
+//     return refund;
+// } catch (error) {
+//     console.error("Error refunding payment:", error);
+//     throw error;
+// }
+
+const refundPayment = async (paymentId) => {
+    try {
+        const refund = await stripe.refunds.create({
+            payment_intent: paymentId,
+        });
+        return { success: true, data: refund };
+        // console.log("paymentId", paymentId);
+        // return { success: true, data: paymentId };
+    } catch (error) {
+        console.error("Error processing refund:", error);
+        return { success: false, error };
+    }
+};
+
 module.exports = {
     getLog,
     createCheckoutSession,
     handleStripeWebhook,
+    refundPayment,
 };
