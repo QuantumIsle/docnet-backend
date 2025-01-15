@@ -12,7 +12,11 @@ const {
     sendPatientCompletedAppointmentEmail,
     sendDoctorCompletedAppointmentEmail,
 } = require("./emailController");
-const { refundPayment } = require("./paymentController");
+// const { refundPayment } = require("./paymentController");
+// const { refundPayment } = require("./paymentController");
+// const paymentController = require("./paymentController.js");
+// const { refundPayment } = paymentController;
+// const refundPayment = paymentController.refundPayment;
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
@@ -272,6 +276,7 @@ exports.addCompletedAppointment = async (req, res) => {
 exports.cancelAppointment = async (req, res) => {
     try {
         const { appointmentId } = req.body;
+        console.log("🚀 ~ appointmentId:", appointmentId);
 
         // Fetch appointment details from the database
         const appointment = await Appointment.findById(appointmentId);
@@ -306,10 +311,12 @@ exports.cancelAppointment = async (req, res) => {
         // const refund = paymentRefundResponse.data;
 
         // Step 2: Call the refundPayment function in PaymentController
+
+        const { refundPayment } = require("./paymentController");
+        // console.log(refundPayment);
         const paymentId = appointment.paymentDetails.paymentId; // Assuming appointment has a reference to payment ID
         const refundResponse = await refundPayment(
             paymentId
-
         );
 
         if (!refundResponse.success) {

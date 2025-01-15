@@ -128,26 +128,14 @@ const handleStripeWebhook = async (req, res) => {
     res.json({ received: true });
 };
 
-// const refundPayment = async (paymentIntentId) => {
-//     res.status(200).json({ message: "Payment refunded successfully", id: paymentIntentId });
-// }
-// try {
-//     const refund = await stripe.refunds.create({
-//         payment_intent: paymentIntentId,
-//     });
-//     return refund;
-// } catch (error) {
-//     console.error("Error refunding payment:", error);
-//     throw error;
-// }
 
-const refundPayment = async (paymentId) => {
+const refundPayment= async (paymentId) => {
     try {
         const refund = await stripe.refunds.create({
             payment_intent: paymentId,
         });
+        console.log("paymentId", paymentId);
         return { success: true, data: refund };
-        // console.log("paymentId", paymentId);
         // return { success: true, data: paymentId };
     } catch (error) {
         console.error("Error processing refund:", error);
@@ -156,8 +144,5 @@ const refundPayment = async (paymentId) => {
 };
 
 module.exports = {
-    getLog,
-    createCheckoutSession,
-    handleStripeWebhook,
-    refundPayment,
+    getLog,createCheckoutSession,handleStripeWebhook,refundPayment,
 };
