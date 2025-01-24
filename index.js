@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-// const passport = require("passport");
+const passport = require("passport");
 const session = require("express-session");
 const jwt = require("jsonwebtoken");
 
@@ -68,8 +68,8 @@ app.use(
 );
 
 // Initialize passport
-// app.use(passport.initialize());
-// app.use(passport.session());
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Routes
 app.use("/auth", require("./routes/authRoutes"));
