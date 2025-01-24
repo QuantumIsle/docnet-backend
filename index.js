@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const express = require("express");
 const cors = require("cors");
 const bodyParser = require("body-parser");
-const passport = require("passport");
+// const passport = require("passport");
 const session = require("express-session");
 const jwt = require("jsonwebtoken");
 
@@ -47,9 +47,12 @@ app.use(cors(corsOptions));
 // Add cookie-parser middleware
 app.use(cookieParser());
 
-
 //Just need to keep it before making app.use bodyParser.json
-app.use("/payments/webhook", bodyParser.raw({ type: "application/json" }), paymentController.handleStripeWebhook);
+app.use(
+  "/payments/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  paymentController.handleStripeWebhook
+);
 
 // Use body-parser to parse JSON bodies into JS objects
 app.use(bodyParser.json());
@@ -65,8 +68,8 @@ app.use(
 );
 
 // Initialize passport
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 // Routes
 app.use("/auth", require("./routes/authRoutes"));
