@@ -42,8 +42,8 @@ const resolvers = {
                 path: "doctorId",
               },
               {
-                path: "outcome.reportRequest", 
-                model: "Report", 
+                path: "outcome.reportRequest",
+                model: "Report",
               },
             ],
           })
@@ -59,13 +59,13 @@ const resolvers = {
               path: "doctorId",
             },
           });
-    
+
         return patient;
       } catch (error) {
         throw new Error(error.message);
       }
     },
-    
+
     getAllPatients: async () => {
       try {
         const patients = await Patient.find({})
