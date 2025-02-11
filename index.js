@@ -57,7 +57,7 @@ app.use(
 // Use body-parser to parse JSON bodies into JS objects
 app.use(bodyParser.json());
 app.use(express.urlencoded({ extended: false }));
-
+// Configure Apollo Server
 // Session configuration
 app.use(
   session({
