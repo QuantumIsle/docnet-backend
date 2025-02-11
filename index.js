@@ -47,9 +47,12 @@ app.use(cors(corsOptions));
 // Add cookie-parser middleware
 app.use(cookieParser());
 
-
 //Just need to keep it before making app.use bodyParser.json
-app.use("/payments/webhook", bodyParser.raw({ type: "application/json" }), paymentController.handleStripeWebhook);
+app.use(
+  "/payments/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  paymentController.handleStripeWebhook
+);
 
 // Use body-parser to parse JSON bodies into JS objects
 app.use(bodyParser.json());
