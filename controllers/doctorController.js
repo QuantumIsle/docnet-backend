@@ -391,28 +391,40 @@ async function authorize() {
 async function getOrCreateFolder(authClient, doctorId) {
   const drive = google.drive({ version: "v3", auth: authClient });
 
+  console.log(`Checking for folder: ${doctorId}`);
+
   const folderList = await drive.files.list({
     q: `mimeType='application/vnd.google-apps.folder' and name='${doctorId}' and trashed=false`,
     fields: "files(id, name)",
   });
 
   if (folderList.data.files.length > 0) {
+    console.log(`Folder exists: ${folderList.data.files[0].id}`);
     return folderList.data.files[0].id;
   }
+
+  console.log(`Creating folder for doctor: ${doctorId}`);
 
   const folderMetadata = {
     name: doctorId,
     mimeType: "application/vnd.google-apps.folder",
-    parents: ["1wAobbjcMFobmXRpaInTc20o19NJZVJz1"],
+    parents: ["1VZ6Pg2l_jiECB49ZfA11vgTjE1yUqRwz"], // Make sure this ID is correct
   };
 
-  const folder = await drive.files.create({
-    resource: folderMetadata,
-    fields: "id",
-  });
+  try {
+    const folder = await drive.files.create({
+      resource: folderMetadata,
+      fields: "id",
+    });
 
-  return folder.data.id;
+    console.log(`Folder created with ID: ${folder.data.id}`);
+    return folder.data.id;
+  } catch (error) {
+    console.error("Error creating folder:", error.message);
+    throw error;
+  }
 }
+
 
 // A Function to upload a file to Google Drive and return its ID
 async function uploadFile(authClient, filePath, fileName, folderId) {
