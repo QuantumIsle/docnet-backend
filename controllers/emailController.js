@@ -1,10 +1,11 @@
 const nodemailer = require("nodemailer");
+require("dotenv").config();
 
 const transporter = nodemailer.createTransport({
   service: "gmail", // You can use other email services like 'Outlook', 'Yahoo', etc.
   auth: {
     user: "admin@docnet.ai", // Replace with your email
-    pass: "fvov ffww ezla ybod", // Replace with your email password (or use App Passwords)
+    pass: process.env.EMAIL_PASS, // Replace with your email password (or use App Passwords)
   },
 });
 
