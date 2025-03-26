@@ -81,7 +81,6 @@ const typeDefs = gql`
       professionStartedYear: Int
       languagesSpoken: String
       workingHours: WorkingHoursInput
-      fee: Int
     ): Doctor
   }
 

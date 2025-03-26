@@ -14,6 +14,7 @@ const resolvers = {
               path: "doctorId", // Path to doctor reference in Appointment
             },
           })
+
           .populate({
             path: "reviews",
             populate: {
@@ -26,7 +27,7 @@ const resolvers = {
               path: "doctorId",
             },
           });
-
+     
         return patient;
       } catch (error) {
         throw new Error(error.message);

@@ -21,7 +21,7 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 exports.addUpcomingAppointment = async (
-    paymentIntentId, // Use them if needed
+    paymentIntentId, 
     status,
     appointmentDetails
 ) => {
@@ -64,8 +64,6 @@ exports.addUpcomingAppointment = async (
             paymentDetails: {
                 paymentId: paymentIntentId,
             },
-            // reason: req.body.reason || "",
-            // notes: req.body.notes || "",
             reason: appointmentDetails.reason || "",
             notes: appointmentDetails.notes || "",
         });
@@ -95,12 +93,11 @@ exports.addUpcomingAppointment = async (
         await doctor.save();
         await patient.save();
 
-        // Response commented out because this is not called as an API endpoint anymore
 
-        // res.status(201).json({
-        //   message: "Upcoming appointment added successfully.",
-        //   appointment: savedAppointment,
-        // });
+        res.status(201).json({
+          message: "Upcoming appointment added successfully.",
+          appointment: savedAppointment,
+        });
 
         console.log("Upcoming appointment added successfully.");
     } catch (error) {
